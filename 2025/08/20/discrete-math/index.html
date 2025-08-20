@@ -1,0 +1,432 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从集合论到置换群 | dudujerry的Coding世界!</title><meta name="author" content="dudujerry"><meta name="copyright" content="dudujerry"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="集合论集合运算满足  交换、结合、分配律 幂等律 徳摩根律 吸收律 $A\cap (A\cup B) &#x3D; A, A\cup(A\cap B) &#x3D; A$  关系五大性质:   自反 对称 传递 反自反 反对称  其中, 只有自反不是if…, then …格式.  复合&#x2F;逆关系满足结合律, 不满足交换律.  笛卡尔积的复合还是笛卡尔积.  $(R\circ S)^{-1} &#x3D; S^{-1} \circ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从集合论到置换群">
+<meta property="og:url" content="https://dudujerry452.github.io/2025/08/20/discrete-math/index.html">
+<meta property="og:site_name" content="dudujerry的Coding世界!">
+<meta property="og:description" content="集合论集合运算满足  交换、结合、分配律 幂等律 徳摩根律 吸收律 $A\cap (A\cup B) &#x3D; A, A\cup(A\cap B) &#x3D; A$  关系五大性质:   自反 对称 传递 反自反 反对称  其中, 只有自反不是if…, then …格式.  复合&#x2F;逆关系满足结合律, 不满足交换律.  笛卡尔积的复合还是笛卡尔积.  $(R\circ S)^{-1} &#x3D; S^{-1} \circ">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dudujerry452.github.io/img/girl_avater.jpg">
+<meta property="article:published_time" content="2025-08-20T13:33:19.000Z">
+<meta property="article:modified_time" content="2025-08-20T13:37:39.386Z">
+<meta property="article:author" content="dudujerry">
+<meta property="article:tag" content="math">
+<meta property="article:tag" content="discrete mathematics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dudujerry452.github.io/img/girl_avater.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从集合论到置换群",
+  "url": "https://dudujerry452.github.io/2025/08/20/discrete-math/",
+  "image": "https://dudujerry452.github.io/img/girl_avater.jpg",
+  "datePublished": "2025-08-20T13:33:19.000Z",
+  "dateModified": "2025-08-20T13:37:39.386Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dudujerry",
+      "url": "https://dudujerry452.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dudujerry452.github.io/2025/08/20/discrete-math/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从集合论到置换群',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/lizard.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dudujerry的Coding世界!</span></a><a class="nav-page-title" href="/"><span class="site-name">从集合论到置换群</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">从集合论到置换群</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-20T13:33:19.000Z" title="发表于 2025-08-20 21:33:19">2025-08-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-20T13:37:39.386Z" title="更新于 2025-08-20 21:37:39">2025-08-20</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="集合论"><a href="#集合论" class="headerlink" title="集合论"></a>集合论</h1><p>集合运算满足</p>
+<ul>
+<li>交换、结合、分配律</li>
+<li>幂等律</li>
+<li>徳摩根律</li>
+<li>吸收律 $A\cap (A\cup B) = A, A\cup(A\cap B) = A$</li>
+</ul>
+<h1 id="关系"><a href="#关系" class="headerlink" title="关系"></a>关系</h1><p>五大性质: </p>
+<ul>
+<li>自反</li>
+<li>对称</li>
+<li>传递</li>
+<li>反自反</li>
+<li>反对称</li>
+</ul>
+<p>其中, 只有自反不是if…, then …格式. </p>
+<h2 id="复合-逆关系"><a href="#复合-逆关系" class="headerlink" title="复合/逆关系"></a>复合/逆关系</h2><p>满足结合律, 不满足交换律. </p>
+<p>笛卡尔积的复合还是笛卡尔积. </p>
+<p>$(R\circ S)^{-1} = S^{-1} \circ R^{-1}$</p>
+<p>自反和传递的集合S有$S \circ S = S$</p>
+<h2 id="关系闭包"><a href="#关系闭包" class="headerlink" title="关系闭包"></a>关系闭包</h2><ul>
+<li>$r(R) = R\cup I_A$</li>
+<li>$s(R) = R\cup R^{-1}$</li>
+<li>$t(R) = \bigcup<em>{i=1}^{\infty}R^i$, 对于有限集$t(R) = \bigcup^{n}</em>{i=1}R^i$</li>
+</ul>
+<p>除了满足传递性的集合的对称闭包不传递, 其他满足性质X的集合的各种闭包都满足性质X. </p>
+<h2 id="等价关系"><a href="#等价关系" class="headerlink" title="等价关系"></a>等价关系</h2><p>Def. 满足<strong>自反, 对称, 传递</strong>的关系</p>
+<p>模m同余关系 $m | (i-j)\Leftrightarrow iR_mj \Leftrightarrow i\equiv j\ mod\ m$</p>
+<p>等价关系的交集, 等价关系的并集的传递闭包还是等价关系. </p>
+<p>Def. 等价类构成的集合称为商集 ${[a]_R | a\in A} = A/R$</p>
+<p>等价类性质: </p>
+<ul>
+<li>$a\in [a]$</li>
+<li>$[a] = [b] \Leftrightarrow aRb$</li>
+<li>$[a] \cap [b] = \empty \Leftrightarrow a\cancel{R}b $</li>
+</ul>
+<p>Def. 划分, 当集合族满足$\bigcup_{i\in J} C_i = A$且$C_i \cap C_j = \empty$, 则称${C_i| i \in J}$为$A$的一个划分. </p>
+<ul>
+<li>划分必定是覆盖</li>
+<li>划分和等价关系可以互推有无</li>
+<li>商集相同则对应的等价关系相同</li>
+</ul>
+<h1 id="偏序关系"><a href="#偏序关系" class="headerlink" title="偏序关系"></a>偏序关系</h1><p>Def. 满足自反, 反对称, 传递的称为偏序关系. </p>
+<ul>
+<li>整除关系是偏序关系</li>
+</ul>
+<p>盖住: $a &lt; b$且不存在c 使得$a &lt; c &lt; b$</p>
+<p>Hasse图: 向上表示盖住</p>
+<p>Def. 两两元素可比较的是全序关系. 集合称为全序集. </p>
+<p>Def. 偏序集的子集若为全序集, 则称为链</p>
+<h2 id="极大-amp-极小元"><a href="#极大-amp-极小元" class="headerlink" title="极大&amp;极小元"></a>极大&amp;极小元</h2><p>Def. $\forall x\in P, s.t. a \leq x$, 则a为最小元. </p>
+<p>Def. $\cancel{\exist}x\in P, s.t. x &lt; a$, 则称a为极小元</p>
+<ul>
+<li>极大元(无限下降链), 最大元都可能不存在. </li>
+<li>最大元存在则必唯一, 且为唯一极大元</li>
+<li><strong>$\underline{有限集中}$</strong>, 极大元存在且唯一时为最大元. </li>
+</ul>
+<h2 id="上界-amp-最小上界"><a href="#上界-amp-最小上界" class="headerlink" title="上界&amp;最小上界"></a>上界&amp;最小上界</h2><p>上界, 最大上界未必存在, 但最大上界存在即唯一. </p>
+<ul>
+<li>恒等关系</li>
+<li>投影函数 笛卡尔积的逆操作</li>
+<li>特征函数 在集合的为1, 不在集合的为0</li>
+<li>自然映射 代表元映射到商集</li>
+</ul>
+<h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><p>左复合: $g\circ f(a)  =g(f(a))$</p>
+<p>关系的复合满足结合律</p>
+<p>若两个关系满足双射,满射 ,和单射那么复合之后仍然是双射, 满射和单射</p>
+<p>函数可逆$\Leftrightarrow$函数是双射</p>
+<h1 id="集合的势"><a href="#集合的势" class="headerlink" title="集合的势"></a>集合的势</h1><p>Def. 如果存在集合A到集合B的双射, 说明A与B等势</p>
+<ul>
+<li>有限集等势, 说明二者元素相同多</li>
+<li>等势是一个等价关系</li>
+<li>两个集合族中集合一一等势, 则它们的并也等势</li>
+<li>无限集必定与其真子集等势</li>
+</ul>
+<p>Def. 若$A\cancel{\sim}B$, 且A与B的某子集等势, 记为$|A| \leq |B|$</p>
+<ul>
+<li><p>$|A| \leq |B|\Leftrightarrow 存在A到B的单射$</p>
+</li>
+<li><p>集合势的$\leq$是一偏序关系</p>
+</li>
+<li>对任意集合$|A| &lt; |2^A|$ (证明 先由单射确认$|A| \leq |2^A|$, 再证明$|A| \cancel{\sim} |2^A|$)</li>
+</ul>
+<p>Def. 与自然数集N等势的集合称为可数集.  </p>
+<ul>
+<li>对任意集合A, 当且仅当A的元素可不重复地排列成一个无穷序列$a_0, a_1, a_2, …, a_n, …$时, A为可数集. </li>
+<li>可数集的无穷子集必为可数集</li>
+<li>任何无限集必有可数子集</li>
+<li>可数集加入/删除有限个元素, 仍为可数集. </li>
+<li>一列可数集(有限或无限)之并为可数集</li>
+<li>可数集的笛卡尔积是可数集</li>
+<li>无限集与可数集/有限集之并与其等势</li>
+</ul>
+<h1 id="代数系统"><a href="#代数系统" class="headerlink" title="代数系统"></a>代数系统</h1><p>Def. 设A为一个集合, AxA到A的映射称为A上的二元运算. </p>
+<ul>
+<li>数的加法是实数集上的二元运算</li>
+<li>数的除法不是实数集上的二元运算, 但是是$R-{0}$上的. </li>
+<li>集合的并和交是P(S)上的二元运算</li>
+</ul>
+<p>运算性质术语: </p>
+<ul>
+<li>可结合的</li>
+<li>可交换的</li>
+<li>左/右分配律</li>
+<li>左/右消去律</li>
+</ul>
+<p>Def. 非空集合上的运算称为代数系统. </p>
+<p>Def. 如果代数系统的子集满足运算的封闭性, 则称为子代数</p>
+<p><strong>单位元</strong></p>
+<ul>
+<li>如果一个运算系统既有左单位元$e_l$, 也有右单位元$e_r$, 则存在单位元$e_l = e_r$</li>
+<li>单位元若存在则唯一</li>
+</ul>
+<p><strong>逆元</strong></p>
+<p>在<A, *>中, 对于$a \in A, 如果存在b\in A, s.t. ba = e $, 则称b是a的左逆元</p>
+<p>左右逆元$b_1=b_2=a’$相等, 则称a是可逆的, 并且a’是a的逆元. </p>
+<ul>
+<li>如果代数系统的运算满足结合律, 则左右逆元相等, 且逆元唯一</li>
+</ul>
+<p>Def. 若a*a = a则a为代数系统下的幂等元. </p>
+<ul>
+<li>单位元若存在必定为幂等元. </li>
+</ul>
+<h1 id="同态与同构"><a href="#同态与同构" class="headerlink" title="同态与同构"></a>同态与同构</h1><p>Def. 设两代数系统<A, *>, <B, $\circ$>为两个代数系统, 设$f: A\rightarrow B$, 如果f保持运算, 即</p>
+<script type="math/tex; mode=display">
+\notag 
+f(x*y) = f(x)\circ f(y)</script><p>则两代数系统同态. f为A到B的同态映射. </p>
+<ul>
+<li>零同态: $f:a | \rightarrow e, \forall a\in A$</li>
+<li>f是单射: 单同态</li>
+<li>f是满射: 满同态</li>
+<li>f是双射: 同构, 记作$A\cong B$</li>
+<li>同态映射的复合仍为单同态、满同态、同构. </li>
+<li>同态映射的逆函数仍是同态映射. </li>
+</ul>
+<p>同态的运算性质保持: </p>
+<ul>
+<li>满同态保持结合律</li>
+<li>满同态保持交换律</li>
+<li>满同态保持单位元</li>
+<li>满同态保持逆元</li>
+<li>同态保持幂等元</li>
+</ul>
+<p>Def. 到自身的同态称为自同态, 到自身的同构称为自同构. </p>
+<h1 id="同余关系与商代数"><a href="#同余关系与商代数" class="headerlink" title="同余关系与商代数"></a>同余关系与商代数</h1><h2 id="同余关系"><a href="#同余关系" class="headerlink" title="同余关系"></a>同余关系</h2><p>Def. E是A上的等价关系, $\forall x_1, x_2, y_1, y_1\in A, 当x_1 E y_1, x_2 E y_2时, x_1<em>x_2 E y_1</em>y_2$, 此时称E为A上的同余关系. </p>
+<p>Def. <A/R, $\circ$>上满足$[x] \circ [y] = [x<em>y]$, 此时要求E是&lt;A, </em>&gt;上的同余关系.  </p>
+<p>据此可以定义, $\phi(x) = [x]$是一个同态, 即$\phi(x) \circ \phi(x) = \phi(x<em>y)$, 是&lt;A, </em>&gt;到<A/E, $\circ$>的<strong>自然同态</strong>. </p>
+<h2 id="同态基本定理"><a href="#同态基本定理" class="headerlink" title="同态基本定理"></a>同态基本定理</h2><p>Def. 设$f$是A到B的同态映射, 如果: </p>
+<p>$xE_f y \Leftrightarrow f(x) = f(y), \forall x, y \in A$</p>
+<p>则$E_f$是A上的同余关系. (证明: 先证等价, 再证性质)</p>
+<h1 id="半群"><a href="#半群" class="headerlink" title="半群"></a>半群</h1><p>Def. 若$<S, \circ>$为一代数系统, 运算满足结合律, 则则称其为半群. </p>
+<ul>
+<li>$a^n = a\circ a\circ a… \circ a$</li>
+<li>$a^ma^n = a^{m+n}$</li>
+<li>$(a^m)^n = a^{mn}$</li>
+</ul>
+<p>当半群的乘法满足交换律时, 称为可交换半群, 此时有$(ab)^n = a^nb^n$</p>
+<p>Def. 若半群中存在单位元, 则为幺半群. </p>
+<ul>
+<li>幺半群S中, 若$a\in S$的逆元存在, 则唯一(满足结合律), 用$a^{-1}$表示. </li>
+<li>$(a^{-1})^{-1} = a$</li>
+<li>$a^{-1}a = e$</li>
+</ul>
+<p>Def. 若半群S的子集T在运算$\circ$下也构成半群($T \subseteq S$在运算$\circ$上封闭), 称T为子半群. </p>
+<p>Def. 若幺半群S的子群T有S的单位元$e\in T$, 则称T是S的子幺半群. ($a^0 = e$)</p>
+<h1 id="群"><a href="#群" class="headerlink" title="群"></a>群</h1><p>Def. 如果一个幺半群满足所有元素都有逆元, 则称为群. </p>
+<p>Def. 如果一个群满足交换律, 则称为交换群或Abel群.</p>
+<p>设G为群</p>
+<ul>
+<li>G中消去律成立</li>
+<li>单位元e是唯一幂等元. </li>
+</ul>
+<p>设$f$是G到H的同态</p>
+<ul>
+<li>$f(e)$是H的单位元</li>
+<li>$\forall a\in G, f(a)^{-1} = f(a^{-1})$</li>
+</ul>
+<p>群有如下判定: </p>
+<ul>
+<li>G是群, 若存在G到H的满同态, 则H必为群</li>
+<li>若G是一个半群, 且有左单位元和$\forall a\in G$存在左逆元$a^{-1}a = e$, 则G为群</li>
+<li>若半群中对$\forall a,b \in G, 方程ax=b, ya=b总有解$, 则G是一个群. </li>
+<li>若消去律成立, 则有限半群是一个群.</li>
+</ul>
+<p>若G是一个有限群, 则运算表中每一行(列)都是G中元素的一个全排列. </p>
+<h1 id="子群和周期"><a href="#子群和周期" class="headerlink" title="子群和周期"></a>子群和周期</h1><p>Def. 如果G是一个群, 其子集在运算下也构成群, 称为子群. 除了{e}和G的称为真子群. </p>
+<p>G是群, H是G的子群: </p>
+<ul>
+<li>H的单位元就是G的单位元</li>
+<li>H中任意元素的逆元就是G中元素的逆元</li>
+</ul>
+<p>H是G的非空子集. 当且仅当</p>
+<ul>
+<li>$\forall a,b \in H, a*b \in H$</li>
+<li>$\forall a\in H, a在G中的逆元a^{-1}\in H$</li>
+</ul>
+<p>时, H是G的子群. </p>
+<ul>
+<li>推论: $\forall a,b \in H, a*b^{-1} \in H \Leftrightarrow H是G的子群$.</li>
+</ul>
+<h2 id="循环子群"><a href="#循环子群" class="headerlink" title="循环子群"></a>循环子群</h2><p>Def. $G为群, a\in G, \exist n\in Z^+, s.t.\ a^n = e, 称满足该条件的最小正整数为a的周期|a|, 否则为\infty$</p>
+<p>设G为群, $a\in G$</p>
+<ul>
+<li>|a| = |(a)|, a的周期等于其生成的循环子群的阶</li>
+<li>若a的周期为$n&lt;\infty$, 则$a^m = e \Leftrightarrow n|m$</li>
+</ul>
+<h1 id="循环群"><a href="#循环群" class="headerlink" title="循环群"></a>循环群</h1><p>Def. G为一个群, $a\in G$, 且$G = (a) = {a^i | i\in Z}$, 称为G为由a生成的循环群, 称a为其生成元. </p>
+<p>设G是一个循环群. </p>
+<ul>
+<li>若G是无限群, 则$<G, *> \cong <Z, +>$</li>
+<li>若G是有限群, 周期是n, 则$<G, *>\cong <Z_n, +_n>$</li>
+</ul>
+<p>设G是一个循环群, </p>
+<ul>
+<li>G的子群必为循环群</li>
+<li>设G是n阶循环群, m是正整数且m|n, 则G中存在唯一一个m阶子群. </li>
+<li>G必为Abel群. </li>
+</ul>
+<h1 id="置换群"><a href="#置换群" class="headerlink" title="置换群"></a>置换群</h1><p>Def. 有限集S到自身的双射称为S上的置换, 当|S| = n时称为n次置换. </p>
+<p>Def. 对集合中的一部分$x_1, x_2, x_3… x_d$, 映射$x_1 \rightarrow x_2, x_2\rightarrow x_3…, x_d\rightarrow x_1$, 称为循环置换. </p>
+<p>d=2时称为对换; d=1时为恒等映射, 也叫单位置换, (1), (n).</p>
+<p>Def. 有限集S = {1,2,3,4 …, n}, 其上所有n次置换构成的集合$S_n$称为n次对称群, 其子群称为n次置换群.</p>
+<ul>
+<li>$S_n$是群. </li>
+<li>(Cayley定理) 任意n阶群必定同构与一个n次置换群</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io">dudujerry</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io/2025/08/20/discrete-math/">https://dudujerry452.github.io/2025/08/20/discrete-math/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dudujerry452.github.io" target="_blank">dudujerry的Coding世界!</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/math/">math</a><a class="post-meta__tags" href="/tags/discrete-mathematics/">discrete mathematics</a></div><div class="post-share"><div class="social-share" data-image="/img/girl_avater.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/08/20/nixos-install/" title="如何安装NixOS"><img class="cover" src="/images/nixos.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">如何安装NixOS</div></div><div class="info-2"><div class="info-item-1">下载镜像下载地址：  国内镜像官方镜像 请注意，不同版本前缀[graphical/minimal]指的是安装时的LiveCD是否带有桌面环境，与安装后的桌面环境无关；如果不是实在没办法，建议选择命令行安装，因为目前图形化界面不支持切换安装源，导致在境内部分网络下安装极其缓慢。 烧录好安装介质后，在Boot Menu界面进入安装器，graphical界面会弹出，只需要根据图形界面提示操作即可，注意分区谨慎操作。这里主要讲命令行安装。 命令行安装如果你使用WiFi（以太网安装可忽略该部分）： 切换到root用户，输入 123456789101112systemctl start wpa_supplicantwpa_cli&gt; add_network0&gt; set_network 0 ssid &quot;myhomenetwork&quot;OK&gt; set_network 0 psk &quot;mypassword&quot;OK&gt; set_network 0 key_mgmt WPA-PSKOK&gt; enable_network 0OK 如果看到conne...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dudujerry</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dudujerry452"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/dudujerry452" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:dudujerry452@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Love & Peace</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E8%AE%BA"><span class="toc-number">1.</span> <span class="toc-text">集合论</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB"><span class="toc-number">2.</span> <span class="toc-text">关系</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%90%88-%E9%80%86%E5%85%B3%E7%B3%BB"><span class="toc-number">2.1.</span> <span class="toc-text">复合&#x2F;逆关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E7%B3%BB%E9%97%AD%E5%8C%85"><span class="toc-number">2.2.</span> <span class="toc-text">关系闭包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AD%89%E4%BB%B7%E5%85%B3%E7%B3%BB"><span class="toc-number">2.3.</span> <span class="toc-text">等价关系</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%81%8F%E5%BA%8F%E5%85%B3%E7%B3%BB"><span class="toc-number">3.</span> <span class="toc-text">偏序关系</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%81%E5%A4%A7-amp-%E6%9E%81%E5%B0%8F%E5%85%83"><span class="toc-number">3.1.</span> <span class="toc-text">极大&amp;极小元</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E7%95%8C-amp-%E6%9C%80%E5%B0%8F%E4%B8%8A%E7%95%8C"><span class="toc-number">3.2.</span> <span class="toc-text">上界&amp;最小上界</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%BD%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">函数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E7%9A%84%E5%8A%BF"><span class="toc-number">5.</span> <span class="toc-text">集合的势</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E6%95%B0%E7%B3%BB%E7%BB%9F"><span class="toc-number">6.</span> <span class="toc-text">代数系统</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E6%80%81%E4%B8%8E%E5%90%8C%E6%9E%84"><span class="toc-number">7.</span> <span class="toc-text">同态与同构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E4%BD%99%E5%85%B3%E7%B3%BB%E4%B8%8E%E5%95%86%E4%BB%A3%E6%95%B0"><span class="toc-number">8.</span> <span class="toc-text">同余关系与商代数</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E4%BD%99%E5%85%B3%E7%B3%BB"><span class="toc-number">8.1.</span> <span class="toc-text">同余关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%80%81%E5%9F%BA%E6%9C%AC%E5%AE%9A%E7%90%86"><span class="toc-number">8.2.</span> <span class="toc-text">同态基本定理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%8A%E7%BE%A4"><span class="toc-number">9.</span> <span class="toc-text">半群</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BE%A4"><span class="toc-number">10.</span> <span class="toc-text">群</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AD%90%E7%BE%A4%E5%92%8C%E5%91%A8%E6%9C%9F"><span class="toc-number">11.</span> <span class="toc-text">子群和周期</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E5%AD%90%E7%BE%A4"><span class="toc-number">11.1.</span> <span class="toc-text">循环子群</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E7%BE%A4"><span class="toc-number">12.</span> <span class="toc-text">循环群</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%AE%E6%8D%A2%E7%BE%A4"><span class="toc-number">13.</span> <span class="toc-text">置换群</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/20/discrete-math/" title="从集合论到置换群">从集合论到置换群</a><time datetime="2025-08-20T13:33:19.000Z" title="发表于 2025-08-20 21:33:19">2025-08-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/08/20/nixos-install/" title="如何安装NixOS"><img src="/images/nixos.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何安装NixOS"/></a><div class="content"><a class="title" href="/2025/08/20/nixos-install/" title="如何安装NixOS">如何安装NixOS</a><time datetime="2025-08-20T08:20:54.000Z" title="发表于 2025-08-20 16:20:54">2025-08-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/07/13/multi-repo/" title="如何配置单个github仓库的推送密钥">如何配置单个github仓库的推送密钥</a><time datetime="2025-07-13T09:06:57.000Z" title="发表于 2025-07-13 17:06:57">2025-07-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/07/02/vim-config/" title="我的vim配置文件">我的vim配置文件</a><time datetime="2025-07-02T02:54:30.000Z" title="发表于 2025-07-02 10:54:30">2025-07-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/02/20/ssh-for-github/" title="如何为github制作ssh密钥">如何为github制作ssh密钥</a><time datetime="2025-02-20T03:56:24.000Z" title="发表于 2025-02-20 11:56:24">2025-02-20</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2025 By dudujerry</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
