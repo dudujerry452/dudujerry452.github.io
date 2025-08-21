@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>简单实现一个多人在线FPS Demo | dudujerry的Coding世界!</title><meta name="author" content="dudujerry"><meta name="copyright" content="dudujerry"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍概念我实现了一个多人在线第一人称射击游戏(Multiplayer-online-sync-FPS)基础框架.   多人在线同步第一人称射击游戏:   第一人称, 指玩家的控制视角为位于眼睛处的摄像头;  多人同步在线, 指支持复数个玩家通过C&#x2F;S架构实现网络同步, 同时存在于一个地图中移动, 射击, 互动;  射击游戏, 指玩家应当被分为两个阵营(通常包括警和匪), 双方使用枪械对对方进行射击">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单实现一个多人在线FPS Demo">
+<meta property="og:url" content="https://dudujerry452.github.io/2025/08/21/quickfps/index.html">
+<meta property="og:site_name" content="dudujerry的Coding世界!">
+<meta property="og:description" content="介绍概念我实现了一个多人在线第一人称射击游戏(Multiplayer-online-sync-FPS)基础框架.   多人在线同步第一人称射击游戏:   第一人称, 指玩家的控制视角为位于眼睛处的摄像头;  多人同步在线, 指支持复数个玩家通过C&#x2F;S架构实现网络同步, 同时存在于一个地图中移动, 射击, 互动;  射击游戏, 指玩家应当被分为两个阵营(通常包括警和匪), 双方使用枪械对对方进行射击">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dudujerry452.github.io/images/quickfps/pic1.png">
+<meta property="article:published_time" content="2025-08-21T02:19:33.000Z">
+<meta property="article:modified_time" content="2025-08-21T02:48:40.501Z">
+<meta property="article:author" content="dudujerry">
+<meta property="article:tag" content="c++">
+<meta property="article:tag" content="go">
+<meta property="article:tag" content="FPS">
+<meta property="article:tag" content="game">
+<meta property="article:tag" content="network">
+<meta property="article:tag" content="asio">
+<meta property="article:tag" content="multiple thread">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dudujerry452.github.io/images/quickfps/pic1.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "简单实现一个多人在线FPS Demo",
+  "url": "https://dudujerry452.github.io/2025/08/21/quickfps/",
+  "image": "https://dudujerry452.github.io/images/quickfps/pic1.png",
+  "datePublished": "2025-08-21T02:19:33.000Z",
+  "dateModified": "2025-08-21T02:48:40.501Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dudujerry",
+      "url": "https://dudujerry452.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dudujerry452.github.io/2025/08/21/quickfps/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '简单实现一个多人在线FPS Demo',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/quickfps/pic1.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dudujerry的Coding世界!</span></a><a class="nav-page-title" href="/"><span class="site-name">简单实现一个多人在线FPS Demo</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">简单实现一个多人在线FPS Demo</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-21T02:19:33.000Z" title="发表于 2025-08-21 10:19:33">2025-08-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-21T02:48:40.501Z" title="更新于 2025-08-21 10:48:40">2025-08-21</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>26分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>我实现了一个多人在线第一人称射击游戏(Multiplayer-online-sync-FPS)基础框架. </p>
+<blockquote>
+<p><strong>多人在线同步第一人称射击游戏</strong>:  </p>
+<p><strong>第一人称</strong>, 指玩家的控制视角为位于眼睛处的摄像头; </p>
+<p><strong>多人同步在线</strong>, 指支持复数个玩家通过C/S架构实现网络同步, 同时存在于一个地图中移动, 射击, 互动; </p>
+<p><strong>射击游戏</strong>, 指玩家应当被分为两个阵营(通常包括警和匪), 双方使用枪械对对方进行射击. 人物模型被击中后, 将会根据被击中的部位损失相应血量, 血量归零则被淘汰. 当一个阵营的所有人被淘汰, 或者指定时间内某阵营的淘汰数小于另一阵营(在允许重生的情况下), 则判断该阵营失败, 另一阵营胜利. 除此之外, 还存在其他玩法, 比如匪方出生时携带一个C4炸弹, 若能将C4炸弹安放在若干个指定地点并在指定时间内没有被警方拆除, 则也判定匪方胜利.  </p>
+</blockquote>
+<p><em>源代码已上传至github: <a href="github.com/dudujerry452/QuickFPS">QuickFPS</a></em></p>
+<h3 id="亮点"><a href="#亮点" class="headerlink" title="亮点"></a>亮点</h3><ul>
+<li>📦<strong>代码至上</strong>. 尽可能使用平台无关的C++代码, 尽可能不添加二进制库. 目前不存在平台有关的代码, 只存在raylib二进制库;</li>
+<li>🏠<strong>结构清晰</strong>. 所有的部件均以“模块名/模块.cpp、模块.h”;</li>
+<li>🚀<strong>高性能.</strong> 区分不同的模块, 模块之间通信均采用生产/消费模型, 并使用双缓冲加速; 实体的派生全部使用运行时多态, 空间效率高;</li>
+<li>🧬<strong>扩展性</strong>. 项目使用C++的派生和多态系统, 轻松扩展新的实体类型; 使用protobuf设计序列化/反序列化过程, 协议扩展简单方便.</li>
+</ul>
+<h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>我实现了如下功能:</p>
+<ul>
+<li>玩家盒子模型渲染</li>
+<li>碰撞检测</li>
+<li>玩家移动操作, 视角操作</li>
+<li>多客户端玩家状态同步</li>
+<li>客户端渲染插值</li>
+<li>C/S游戏动态报文大小通讯协议</li>
+<li>游戏通讯协议的实现 序列化与反序列化</li>
+<li>渲染/物理/网络线程并行优化</li>
+</ul>
+<p><img src="/images/quickfps/pic1.png" alt=""></p>
+<p><em>QuickFPS运行截图, 多端同步运行速率接近60FPS. 上/下方窗口分别是两个客户端的视角, 可以看到上方客户端正试图跳到墙上, 而下方客户端注视着上方客户端这一疯狂举动</em></p>
+<h3 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h3><h4 id="运行时"><a href="#运行时" class="headerlink" title="运行时"></a>运行时</h4><p><em>服务端</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    A(服务端启动) --&gt;C[线程启动]</span><br><span class="line">    C --&gt; E[网络线程]</span><br><span class="line">    E --&gt; D[接收玩家输入请求]</span><br><span class="line">    E --&gt; B[广播当前世界状态]</span><br><span class="line">    C --&gt; F[物理线程] </span><br><span class="line">    F --&gt; G[世界更新]</span><br></pre></td></tr></table></figure>
+<p><em>客户端</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line"></span><br><span class="line">C[物理线程]</span><br><span class="line">B[渲染线程] &lt;---&gt; |将当前实体和地图数据传达给渲染器| C</span><br><span class="line">D[网络线程]</span><br><span class="line">C &lt;---&gt; |传递玩家输入, 接收服务器世界状态广播| D</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">	A(客户端启动) ---&gt; B[线程启动]</span><br><span class="line">	B ---&gt; C[网络线程]</span><br><span class="line">	B ---&gt; D[物理线程]</span><br><span class="line">	B ---&gt; E[网络线程]</span><br><span class="line">	</span><br></pre></td></tr></table></figure>
+<h4 id="编译期"><a href="#编译期" class="headerlink" title="编译期"></a>编译期</h4><p>工程拆分为如下模块(见源代码CMakeLists.txt):</p>
+<ul>
+<li><kbd>CAPI</kbd> 用于将世界更新逻辑打包传递到服务端</li>
+<li><kbd>Game</kbd> 游戏逻辑, 主要是世界更新逻辑, 也包括玩家处理输入, 实体增减等</li>
+<li><ul>
+<li>Game/Camera 处理摄像机逻辑, 支持将视角附加到某实体上</li>
+<li>Game/Entity 处理实体逻辑, 包括实体状态更新和状态导出</li>
+<li>Game/Map 地图的存储和状态导出</li>
+<li>Game/Physics 物理模拟模块, 实体可根据需要附加物理模块</li>
+<li>Game/Player 维护玩家信息, 处理本地/远端输入, 继承自Entity</li>
+<li>Game/World 世界的存储和更新逻辑, 负责应用远端广播世界状态, 以及物理帧的世界/实体状态更新, 处理插值</li>
+</ul>
+</li>
+<li><kbd>Input</kbd> 处理本地玩家输入</li>
+<li><kbd>Network</kbd> 负责发出本地玩家操作请求, 接收服务器广播的世界状态, 实现协议流程</li>
+<li><kbd>Renderer</kbd> 渲染器, 接收World给出的实体状态渲染到屏幕上</li>
+<li><kbd>Serialize</kbd> 序列化器, 将世界状态/输入结构体序列化/反序列化为二进制串, 是C/S间通信的基础设施</li>
+<li><kbd>Util</kbd> 定义一些结构体和解决一些第三方库相关的语义问题</li>
+<li><kbd>Server</kbd> 不属于客户端CMake工程, 通过cgo使用CAPI构建的静态库实现于客户端同态的世界/物理更新逻辑, 广播权威世界状态, 接收客户端输入请求, 模拟权威世界状态 </li>
+</ul>
+<p>接下来, 我将详细讲解我工程的具体实现. </p>
+<h2 id="实现讲解"><a href="#实现讲解" class="headerlink" title="实现讲解"></a>实现讲解</h2><h3 id="Game"><a href="#Game" class="headerlink" title="Game"></a>Game</h3><p>Game模块是整个QuickFPS的灵魂, 是世界运行起来的基础. 在讲解网络部分之前, 必须先了解Game模块, 因为几乎所有玩家可见的逻辑都位于Game模块. </p>
+<blockquote>
+<p><strong>The play’s the thing.</strong></p>
+<p><strong>好戏才是关键。 —- Hamlet, Act II, Scene II</strong></p>
+</blockquote>
+<p>为了构建一个玩家能在其中移动, 跳跃, 射击的世界, 我将世界分为三个部分:</p>
+<ul>
+<li>地图元素, 静态, 有体积, 且不可”进入其内部”的物体; </li>
+<li>实体, 会动且有<strong>智慧</strong>的物体; </li>
+<li>观察者, 没有体积, 可以将观察到的东西以图像的形式传递给显示屏.</li>
+</ul>
+<p>自然而然, 如下三个类便可导出:</p>
+<ul>
+<li>Entity, 实体</li>
+<li>Map, 地图元素</li>
+<li>Camera, 摄像机</li>
+</ul>
+<h4 id="实体"><a href="#实体" class="headerlink" title="实体"></a>实体</h4><p>实体是一个抽象程度比较高的事物, 仅仅代表复杂的, 会移动的实体(自然玩家也属于此类). 因此, 为其设定多个<strong>属性</strong>(<code>Game/Entity.h</code>), 包括<strong>实体类型, ID, 位置, 朝向, 速度, 碰撞箱, 相对坐标</strong>. </p>
+<p>有了如上属性, 我们便可以想象出一个实体: 实体拥有一个碰撞箱, 这是它的躯体, 这代表着它在空间中占据的位置. 与此同时, 它在无垠的三维空间中拥有一个坐标, 看向该坐标, 我们便可以看到实体的身体; 也许它此刻在滑动(根据惯性定律), 这便代表它的速度. 看着实体的时候, 实体偶尔也会看<strong>向</strong>我们, 这意味着它拥有朝向. </p>
+<p><img src="/images/quickfps/pic3.png" alt="pic3"></p>
+<p><em>一个实体</em></p>
+<p>在每次世界更新时, <kbd>Physics</kbd>将会根据实体的速度更新实体的位置, 这是速度的实现. 当实体试图向”前”移动时, 它”朝向”的速度便会增加, 简而言之”朝向”意味着实体的”前”. </p>
+<p>我们认为这样的实体已经足够拟真, 足以让游玩游戏的玩家们<strong>深信不疑</strong>这是某种会动的<em>东西</em>, 因为它拥有体积和位置, 拥有速度和朝向. </p>
+<blockquote>
+<p>QuickFPS中的实体最重要的特征是<strong>运行时多态</strong>. 每个实体都是一个虚基类, 可以扩展为玩家, 子弹, 移动平台等多种对象. 其中包含多个抽象函数: </p>
+<ul>
+<li>getter, setter方法; </li>
+<li><code>Clone()</code>函数, 可以根据对象的实际类型克隆出派生对象; </li>
+<li><code>PhysicsUpdate()</code>, 根据具体实体的不同调用不同的物理更新逻辑. </li>
+</ul>
+</blockquote>
+<h4 id="地图元素"><a href="#地图元素" class="headerlink" title="地图元素"></a>地图元素</h4><p>地图元素是一类不会移动的体积. 类似实体, 它们同样拥有体积和位置, 这使得我们可以看到它们. </p>
+<p>它们被设计出来的主要目的是<strong>限制实体随意移动</strong>, 射击(和击败敌人, 对于玩家而言) —- 没有约束的模型总是会让人兴致缺缺. 因此, 地图元素不同于实体元素, 它的碰撞箱不可进入, 若实体”撞上”了地图元素的碰撞箱, 它们就会被迫停止. 具体而言, 它们相对于地图元素碰撞箱壁的法向速度将被清零. 除此之外, 它们就只是一些盒子模型. 也许在未来添加了多面体模型系统后, 它们将会变成景观和建筑物之类的东西. </p>
+<h4 id="摄像机"><a href="#摄像机" class="headerlink" title="摄像机"></a>摄像机</h4><p>在Counter-Strike: Global Offensive(CS:GO)中, 玩家没有被击败前, 他们的视角绑定在一个人物模型上. 当他们的生命值归零的一瞬间, 视角将会立刻切换成注视他们角色变成布娃娃状态的第三人称视角, 过了大约3s后切换到注视击杀他的那个玩家的第三人称视角. </p>
+<p>这意味着玩家的视角(观察世界的窗口)并不会持续在某个实体上, 他们有时需要观看其他位置, 其他实体位置的视角, 因此<strong>摄像机</strong>此时发挥作用, 它总是将当前观察到的内容反馈给玩家(传递渲染参数给渲染器, 进而渲染出摄像机所在视口的画面), 但其位置和朝向随时可以改变, 或绑定在某个实体/位置上. </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">Connect</span><span class="params">(World* world, <span class="type">uint32_t</span> entity_id)</span></span>;</span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">Update</span><span class="params">()</span></span>; <span class="comment">// attach&#x27;s id is checked in update</span></span><br><span class="line"><span class="function">Camera&amp; <span class="title">GetCamera</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> m_camera; &#125;</span><br></pre></td></tr></table></figure>
+<p>Connect函数可以将摄像机绑定在世界中的某个实体(ID)上, 进而在每次世界更新时跟随实体的位置和朝向移动. 或者, 也可以绑定在某个静止的实体上, 实现上帝视角的观察. 通过操控实体的运动轨迹, 也可以实现运镜的效果. </p>
+<p>有了基本的逻辑构件(实体, 地图元素, 摄像机)后, 我们可以开始着手建造世界的动态部分. 接下来, 我们以World为主干, 讲解其分开的枝杈(都是关于游戏动态部分的逻辑). </p>
+<h4 id="世界更新"><a href="#世界更新" class="headerlink" title="世界更新"></a>世界更新</h4><p>计算机的世界是离散的. 现实世界中, 时间可以近似(考虑到普朗克时间)看做可以无限细分的. 也就是任取一个时间微分$dt$, 将其与时间相互作用的变量相乘, 如$vdt$, 就可以计算出一个无限小时间区间内的某变量变化, 从而计算出某时间区间内的无限精确变量值: $\int v(t)dt$. </p>
+<p>为了模拟$dt$, 我们将时间分为多个足够小(大约1/60)的时间切片, 称其为<strong>物理帧</strong>. 如果物理帧足够小, 玩家将无法分辨物理帧是否连续. 具体而言, 人眼能接受到的刷新频率上限大约是60帧/秒, 将物理帧率(PFPS)设置为60帧/秒是很适当的. 幸运的是, 现代计算机已经能轻松实现这样的计算频率. </p>
+<p>世界更新将分为两个部分: <strong>动画/模型更新</strong>, <strong>物理更新</strong>和<strong>输入更新</strong>. 对于客户端而言, 则还有<strong>世界状态广播更新</strong>. 世界作为一个类将会通过接口被外部触发器间隔性唤醒, 每次唤醒将会执行这几种更新. 我们来考察这几个关键函数来理解世界更新: </p>
+<p><em>World.h</em></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// update related</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">WorldUpdate</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">WorldUpdateFixed</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">WorldPhysicsUpdate</span><span class="params">()</span></span>; </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">WorldAnimeUpdate</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ApplyInputs</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ApplyUpdater</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p><code>WorldUpdate()</code>: 包装函数, 顺序执行所有方法: </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">World::WorldUpdate</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="type">bool</span> apply0 = <span class="built_in">ApplyInputs</span>();</span><br><span class="line">    <span class="type">bool</span> apply1 = <span class="built_in">ApplyUpdater</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// normal logics</span></span><br><span class="line">    <span class="built_in">WorldPhysicsUpdate</span>(); </span><br><span class="line">    <span class="built_in">WorldAnimeUpdate</span>();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">ProvideUpdater</span>(); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ApplyInputs()</code>: 应用外界输入. 对于客户端而言, 输入来自玩家按键后生产的输入事件; 对服务端而言, 输入来自客户端发来的的输入状态确认请求. 两种输入事件都存在在<code>World</code>内部的无锁队列中, 在<code>ApplyInputs()</code>中取出, 因此是线程安全的. </p>
+<p><code>ApplyUpdater()</code>: 应用服务器广播的世界状态. 世界状态以实体列表的形式保存, 内部应用双缓冲, 内部有锁, 线程安全, 只会读取出准备好的世界状态. 关于网络-&gt;世界-&gt;渲染器的多级缓冲实现, 我将留到<kbd>Network</kbd>中解释.</p>
+<p><code>WorldPhyicsUpdate()</code>: 对每个实体运行其物理更新函数, 同时运行物理引擎<kbd>Physics</kbd>的全局物理更新函数. 举例来说, 实体的物理更新函数包括计算玩家与地面的摩擦力, 全局更新函数则会计算实体的重力加速度等. 但全局更新函数最主要的作用还是进行碰撞检测. </p>
+<p><code>WorldAnimeUpdate()</code>: 坦率的说, 这个函数基本是为未来开发保留的. 比如, 当人物移动时, 我们希望播放一个人物模型的逐帧动画. 因此, 这个函数将会更新实体的模型等等. </p>
+<p><code>ProvideUpdater()</code>: 这里的Updater其实指的就是世界状态, 即实体列表. 这意味着, 每次物理更新, 这个函数都会向<code>World</code>内部的世界状态缓冲区提供一个本帧内的全新世界状态. 在服务端的运行时中, 这个函数被封装到<kbd>CAPI</kbd>中, 提供服务端将要广播的世界状态. </p>
+<p><code>WorldUpdateFixed()</code>: 世界更新的封装函数, 内部通过<code>std::chrono</code>计算当前FPS, 并通过<code>std::this_thread::sleep()</code>等待计算结束, 没有到达FPS的时间, 并且用一个长度为5的序列统计“近期FPS”(在游戏界面中, 显示为PFPS). </p>
+<h4 id="世界状态"><a href="#世界状态" class="headerlink" title="世界状态"></a>世界状态</h4><p>前文提到, 世界基本上由三个构件组成: 实体, 地图元素, 观察者. 因此, 在<code>World</code>模块, 将需要存储这三种构件. </p>
+<p><strong>实体</strong>: 使用<code>std::unordered_map</code>存储实体ID到实体智能指针的映射. 值得一提的是, 所有的实体实例我都使用了<code>std::unique_ptr</code>存储, 也就是所有权归“世界”. 在语义上, 我希望这表示每个实体都是明确归属于某个世界实例; 在语法上, 我希望每个实体的资源与世界实例牢牢绑定, 以便管理和释放. </p>
+<p><strong>地图元素: </strong>仅存储一个<code>Map</code>结构. </p>
+<blockquote>
+<p><code>Map</code>结构用来完整表示一个地图, 其中包括地图名, 地图元素列表(<code>std::vector</code>存储), 以及重生点. </p>
+</blockquote>
+<p><strong>观察者: </strong> 存储一个<code>WorldCamera</code>. </p>
+<blockquote>
+<p><code>WorldCamera</code>是QuickFPS专门为了为<code>World</code>实例摄像的摄像机. 如前文所述, 其<code>Connect()</code>函数可以将自己绑定到一个<code>World</code>实例的实体上, 并跟随它运动. </p>
+</blockquote>
+<h4 id="碰撞检测"><a href="#碰撞检测" class="headerlink" title="碰撞检测"></a>碰撞检测</h4><p>在FPS世界中, 实体当然不能随便移动. 考虑两种情况, 如果某个实体在其运动路径上有一个障碍物(通常是地图元素), 那么它将被迫停止运动, 加再多速度也不行; 如果没有地板(作为地图元素), 那么实体会立刻由于万有引力坠入无限的深渊. </p>
+<p>因此, 碰撞检测是必要的. 在QuickFPS简单的框架下, 我们只考虑实体与地图元素之间的碰撞, 并且假定碰撞箱是轴对齐包围盒. </p>
+<blockquote>
+<p><strong>包围盒</strong>是一个简单的几何空间, 里面包含复杂的具体物体模型. 一般来说, 添加包围盒的目的是为了进行快速碰撞检测, 或为了进一步的精确碰撞检测筛选掉一部分不可能碰撞的物体. 在QuickFPS中, 我们暂时仅采用轴对齐包围盒进行碰撞检测.</p>
+<p><strong>AABB盒(轴对齐包围盒)</strong>就是一个简单的六面体, 每一条边平行于一个坐标轴, 因此只需要两个坐标min, max即可表示一个AABB盒. 要进行碰撞检测也很简单, 只需要判断一个包围盒的min或max是否在另一个的[min, max]中. </p>
+<p>除了AABB盒之外, 还有OBB(有向包围盒), 8-DOP以及凸壳, 如图(来源见水印): </p>
+<p><img src="/images/quickfps/pic2.png" alt="pic2"></p>
+</blockquote>
+<p>我们可以将“碰撞”在QuickFPS的离散系统下描述为: 设$Check(box)$表示包围盒$box$是否与其它地图元素重叠, 实体$box$在某时刻具有了一个速度$v$, 在属于它的某物理帧中它的位置从$pos$变成了$pos+vdt$, 当下式满足后, 我们称发生了碰撞: </p>
+<script type="math/tex; mode=display">
+\notag
+\begin{cases}
+Check(pos+box) = 0 \\
+Check(pos+vdt+box) = 1
+\end{cases}</script><p>也即, 在移动前包围盒没有重叠, 时间微元(物理帧)结束后发现了重叠. 我们的目标是尽可能让物体避免重叠, 并且实现类似现实世界中的“碰撞-停止”表现效果. </p>
+<p>因此, 按照现实世界人体和水泥墙的碰撞结果, 我们可以想象实体和地图元素间总是发生非弹性碰撞. 根据动量定理, 我们希望实体在碰撞结束后停留在以帧出发点到原本帧结束点之间的连线与墙壁交点处, 并且损失所有与壁面垂直方向的速度. 如图所示: </p>
+<p><img src="/images/quickfps/pic4.png" alt="pic4"></p>
+<p>考虑到我们使用AABB盒, 因此障碍物法向量也平行于坐标轴. 因此, 我们使用轴向速度分解的方式处理三个方向的速度造成的碰撞: 对每个方向单独计算物理帧结束后是否重叠, 若重叠则回退至最近不重叠位置. 伪代码表示如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pos = Entity.Pos()</span><br><span class="line">velocity = Entity.Velocity()</span><br><span class="line">for i in [x,y,z]: </span><br><span class="line">	newPos = pos, newPos.i += velocity.i</span><br><span class="line">	if Check(pos):</span><br><span class="line">		newPos = FindNotCollision(pos, newPos, i)</span><br><span class="line">	Entity.Pos().i += velocity.i</span><br></pre></td></tr></table></figure>
+<p>对每个方向先应用速度增量, 若应用后出现重叠现象, 则使用一函数<code>FindNotCollision()</code>计算这之间的能”前进”最远的不重叠的位置. 由于只对单个轴方向计算, 因此问题被转化为一维问题: </p>
+<script type="math/tex; mode=display">
+对给定的区间[l_1, r_1]和[l_2, r_2]以及最大增量\Delta, 求最大的x使得[l_1+x, r_1+x]与[l_2, r_2]不重叠, 且\forall x' \in [0, x), [l_1 +x', r_1 + x'] 不与[l_2, r_2]重叠.</script><p>对这个问题有很多种解法: </p>
+<ol>
+<li>考虑到障碍物一般占据区间一侧, 使得碰撞计算具有单调性. 于是可以使用二分法, 二分出最接近$0$的$x$.</li>
+<li>障碍物作为包围盒都具有min和max字段, 可以直接根据速度的方向确定障碍物距离移动实体最近的边, 从而将移动实体世界限制在改边上. </li>
+<li>用一个很小的步长逐步增加$x$来”前进”, 直到发生重叠. 此时, 采用发生重叠之前的那个$x$. 这种方法的本质是细分时间单元, 从而近似的认为实体在某个时间微元中撞上了障碍物. </li>
+</ol>
+<p>考虑性能和实现难度等, 我使用方法三进行检测. 原因是方法一可能出现障碍物分布中间留有空隙, 进行二分时可能在空隙中取到”成功”, 导致算法失效; 方法二则对理想情况要求过高, 方法三在实践中较为稳定, 也便于扩展到日后更复杂的碰撞系统中. 具体实现见<code>src/Game/Physics.cpp</code>. </p>
+<h3 id="Renderer"><a href="#Renderer" class="headerlink" title="Renderer"></a>Renderer</h3><p>在讲解<kbd>Network</kbd>之前, 我想借<code>Renderer</code>来简单的说明我使用的双缓冲技术. <code>Renderer</code>是QuickFPS的渲染器模块, 负责将<code>World</code>提供的逻辑状态渲染成可见图像提供给玩家. 由于本项目重点在实现多人网络同步, 因此Renderer写的很简单: 使用<code>raylib</code>的<code>DrawCube</code>来绘制所有AABB包围盒. 不过, 效果非常不错, 也支持全平台. </p>
+<p>值得一提的是, <code>Renderer</code>是我第一个实现了双缓冲的模块. 在开发时, 我为渲染操作(<code>Renderer</code>)和物理计算(<code>World</code>)分离而创造了第一个线程(新线程是物理线程, 渲染线程因为需要OpenGL上下文等原因必须运行在主线程), 头疼于物理线程和渲染操作都要访问当前实体状态和地图元素, 二者异步读写会造成脏读脏写. 若要解决这个问题, 同样有两种途径: 对一切<code>Renderer</code>和<code>World</code>读写一切数据的操作加锁, 或者创造一个中间缓冲区, <code>World</code>把渲染器需要的数据通过中间缓冲区交给<code>Renderer</code>. 中间缓冲区的结构可见<code>src/Game/World.h</code>中的<code>RenderStateBuffer</code>结构体. </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">RenderStateBuffer</span> &#123;</span><br><span class="line">    std::vector&lt;Entity&gt; entities;</span><br><span class="line">    std::vector&lt;MapObject&gt; objects;</span><br><span class="line">    Camera camera;</span><br><span class="line"></span><br><span class="line">    <span class="type">uint32_t</span> pfps;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以看到, <code>World</code>为渲染器提供了实体列表和地图元素列表, 以及相机参数. 额外的是<code>pfps</code>, 毕竟游戏界面也要渲染物理帧率. </p>
+<h4 id="双缓冲"><a href="#双缓冲" class="headerlink" title="双缓冲"></a>双缓冲</h4><p>围绕双缓冲机制, <code>Renderer</code>有两个核心函数: </p>
+<p><code>Render()</code>: 加锁, 从前台缓冲区指针中读取数据到局部变量, 使用局部变量渲染画面. </p>
+<p><code>Prepare(RenderStateBuffer&amp;&amp; buffer)</code>: 先异步地将渲染状态读入后台缓冲区, 再对前后台缓冲区加锁, 将指向后台数据与前台数据的指针地址交换, 这样下次<code>Render</code>函数通过指针读取前台缓冲区时读取到的就是刚才读入好的”后台”缓冲区.</p>
+<p>前后台缓冲区并无本质的区别, 区分它们谁是前后台的唯一标志就是<code>Renderer</code>存储的两个指针, 分别存储这两个缓冲区的地址. 当后台缓冲区填写完毕并且前台缓冲区没有在被读, 就会触发两个指针的地址交换, 从而使二者身份调换. 我自认为这是个聪明的优化, 如图:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">	A[Prepare]---&gt; E(后台缓冲区指针) ---&gt; B[后台缓冲区]</span><br><span class="line">	C[前台缓冲区] ---&gt; |用锁读取| F(前台缓冲区指针) ---&gt; D[Render]</span><br><span class="line">	E &lt;---&gt;|用锁交换| F</span><br></pre></td></tr></table></figure>
+<p>后来, 我在多处线程同步点使用该双缓冲优化, 之后不再赘述原理. </p>
+<h3 id="Network"><a href="#Network" class="headerlink" title="Network"></a>Network</h3><p>终于, 网络. 这是整个项目中最令我兴奋的部分, 可以说之前的世界逻辑和简单的渲染器都是为了服务多人同步模型的试验而搭建的环境. 这部分, 我将讲述我是如何<strong>设计</strong>和<strong>实现</strong>游戏状态同步协议. </p>
+<p>首先, 在运输层协议上, 我自然而然地选择了UDP. UDP的特点是没有拥塞控制和流量控制, 不需要握手, 建立连接, 因此时延低, 效率高. 随之而来的问题可能是丢包率高, 因为UDP不确保可靠传输, 并且某些网关会配置拦截UDP流量的防火墙. 不过这些都可以由协议的额外设计解决, 就像QUIC一样. </p>
+<blockquote>
+<p><strong>I have a joke about UDP, but you might not get it.</strong> </p>
+<p><strong>我有个关于UDP的笑话, 但你可能收不到。—- UDP joke</strong></p>
+</blockquote>
+<h4 id="框架选择"><a href="#框架选择" class="headerlink" title="框架选择"></a>框架选择</h4><p>在网络框架上, 我选择了Asio网络库. Asio以其强大的异步模型和稳定高效而闻名, 并且是Boost库的一部分(然而我不想在QuickFPS中引入如此重量级的库. 幸运的是, Asio支持单独使用). Asio 优雅地封装了不同操作系统的底层异步 I/O 机制, 为开发者提供了统一的编程接口, 这帮助了我实现QuickFPS的跨平台特性. 最重要的是, Asio的异步模型是目前我能找到的最强大的, 并且它足够接近底层, 能够让我以一个足够低的视角发挥设计和实现协议的愿望. </p>
+<p>Asio支持三种异步模型: </p>
+<ul>
+<li>Callback, 回调函数. 这是最经典和基础的方式, 通过将一个lambda表达式, 函数或者函数对象传入异步函数, 从而让事件发生(比如一个数据包接收完毕)时调用该函数; </li>
+<li>Futures, 通过获取一个<code>std::future</code>来允许以同步的方式等待异步结果; </li>
+<li>Coroutines, 携程, . 这是目前最时髦也最直观的方法, 不过需要C++20. </li>
+</ul>
+<p>由于我在一直在项目中使用C++17, 因此我只好使用回调和Futures结合的方式使用Asio异步模型. </p>
+<h4 id="异步模型设计"><a href="#异步模型设计" class="headerlink" title="异步模型设计"></a>异步模型设计</h4><p><kbd>Network</kbd>的核心是<code>Network</code>类. 这个类拥有创建UDP套接字, 提供异步和阻塞式发送/接收UDP请求的功能. 一切的核心是Asio的<code>io_context</code>事件循环, 一切的发送和接收操作都将被推送给Asio的事件循环来实现. </p>
+<p>首先, 从字符串和端口号解析出<code>endpoint</code>, 指定使用IPv4下的UDP协议, 指定服务器地址和端口. 根据此<code>endpoint</code>创建套接字. 由于UDP不需要建立连接, 因此本操作是完全在本地完成的, 可以同步运行. 接下来启动一个新的网络线程, 并在该线程中启动Asio的事件循环. 在此基础上, 我们通过考察<code>Network</code>诸函数的方式来讲解该异步模型是如何运行的. </p>
+<p><code>do_receive()</code>: 内部是一个传入回调函数的<code>async_receive</code>, 当接收到UDP消息时, 执行通过<code>setMessageHandler</code>设定的异步回调函数(这里需要加锁, 否则会与<code>setMessageHandler</code>产生竞争造成脏读脏写), 接着再启动一个<code>do_receive()</code>, 从而形成一个接收函数递归链, 第一个<code>do_receive()</code>调用第二个<code>do_receive()</code>, 从而实现异步数据接收. </p>
+<p><code>receive_blocking()</code>: 阻塞地接收消息, 但仍在利用<code>do_receive()</code>. 在<code>Network</code>中设置一个Promise成员. 函数执行开始时, 新建一个Promise, 并保存其<code>std::future</code>. 将新建的Promise交给类成员, <code>do_receive()</code>会在接收到新消息时满足该Promise, 从而使<code>receive_blocking()</code>的future阻塞被撤走, 从而实现了阻塞式接收新消息. 这个功能将用在协议实现上. </p>
+<p>值得一提的是, 在Windows平台上, <code>asio.h</code>隐式引用了<code>windows.h</code>, 导致其与raylib的<code>CloseWindow</code>函数冲突, 于是我只好将<code>Network</code>的功能以设计C风格接口的思路封装为<code>networkapi.h</code>供main函数调用. </p>
+<h4 id="协议设计"><a href="#协议设计" class="headerlink" title="协议设计"></a>协议设计</h4><p>由于我们使用C/S架构, 因此协议的流程不可避免地建立在以下基础上, 客户端和服务端各自维护一个世界状态, 但以服务端为准: </p>
+<ul>
+<li>客户端发出操作请求, 服务端接受并在服务端维护的世界状态中应用该客户请求的操作; </li>
+<li>服务端定期发送状态更新广播, 通知所有客户端世界状态的变化; </li>
+<li>客户端接收广播, 并用广播的世界状态作为权威状态更新和纠正本地世界的状态. 如图:</li>
+</ul>
+<p>如图: </p>
+<p><img src="/images/quickfps/pic5.png" alt="pic5"></p>
+<p>在此基础上, 在设计协议前, 我们有几个基本要求需要满足: </p>
+<ol>
+<li>协议需要支持传输玩家输入</li>
+<li>协议需要支持服务端广播世界状态</li>
+</ol>
+<p>然后是一些玩家体验相关的需求: </p>
+<ol>
+<li>玩家希望尽可能快地加入游戏</li>
+<li>玩家希望他的操作立刻获得反馈</li>
+<li>玩家希望除了他之外, 其他实体的移动也要看起来流畅</li>
+<li>玩家希望延迟和丢包率尽可能低</li>
+<li>服务器希望使用尽可能少的带宽</li>
+</ol>
+<p>以上是主要的需求, 还有一切边缘情形需要考虑:</p>
+<ol>
+<li>玩家不希望被”认错”, 即上一次加入游戏的玩家断开连接后, 下一次加入游戏时服务器仍记住该客户端的标识符</li>
+<li>玩家的客户端大部分时间性能充裕</li>
+</ol>
+<p>考虑到1, 2和6, 7条, 我们必须设计一条低带宽需求的快速通信方法. 于是, 我使用<code>protobuf</code>对要传输的数据进行序列化/反序列化来实现客户端/服务端的高级语言层级的通讯. </p>
+<h5 id="协议设计-消息结构"><a href="#协议设计-消息结构" class="headerlink" title="协议设计: 消息结构"></a>协议设计: 消息结构</h5><p>结合QuickFPS此前的数据结构定义, 我们使用<code>protobuf</code>编写几个基础的协议中会用到的数据结构. </p>
+<blockquote>
+<p><strong>Protocol Buffers (简称 Protobuf)</strong> 是由 Google 开发的一种<strong>轻便、高效、语言无关、平台无关</strong>的结构化数据序列化机制. 它常被用于远程过程调用 (RPC) 和数据存储等场景, 可以看作是 JSON 或 XML 的一种替代方案, 但性能更高. </p>
+<p>它的核心工作流程是</p>
+<ol>
+<li><strong>定义 (Define)</strong>：在一个 .proto 文件中, 像定义一个类一样, 定义你的数据结构（称为 “消息” Message）.</li>
+<li><strong>编译 (Compile)</strong>：使用 Protobuf 编译器 (protoc) 将 .proto 文件编译成你选择的编程语言（如 C++, Java, Python 等）的源代码.</li>
+<li><strong>使用 (Use)</strong>：在你的应用程序中, 引入这些生成的类, 就可以轻松地将数据对象序列化成紧凑的二进制流，或从二进制流中反序列化恢复出数据对象.</li>
+</ol>
+</blockquote>
+<p>以下是此协议使用的全部关键字字段(以protobuf语法表示):</p>
+<figure class="highlight protobuf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// gamedata.proto</span></span><br><span class="line">syntax = <span class="string">&quot;proto3&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="comment">//    InputState</span></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="keyword">message </span><span class="title class_">PInputState</span> &#123;</span><br><span class="line">  <span class="type">uint32</span> player_id = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">repeated</span> <span class="type">uint32</span> wasd_pressed = <span class="number">2</span>;</span><br><span class="line">  <span class="type">uint32</span> space_pressed = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">message </span><span class="title class_">Vector2</span> &#123;</span><br><span class="line">    <span class="type">float</span> x = <span class="number">1</span>;</span><br><span class="line">    <span class="type">float</span> y = <span class="number">2</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  Vector2 mouseDelta = <span class="number">4</span>;</span><br><span class="line"></span><br><span class="line">  <span class="type">uint32</span> sequence_number = <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="comment">//   EntityState</span></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="keyword">message </span><span class="title class_">PEntityState</span> &#123;</span><br><span class="line">  <span class="type">uint32</span> id = <span class="number">1</span>;</span><br><span class="line">  <span class="type">bool</span> is_error = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">message </span><span class="title class_">Vector3</span> &#123;</span><br><span class="line">    <span class="type">float</span> x = <span class="number">1</span>;</span><br><span class="line">    <span class="type">float</span> y = <span class="number">2</span>;</span><br><span class="line">    <span class="type">float</span> z = <span class="number">3</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Vector3 position = <span class="number">3</span>;</span><br><span class="line">  Vector3 forward = <span class="number">4</span>;</span><br><span class="line">  Vector3 velocity = <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">  Vector3 bounding_box_min = <span class="number">6</span>;</span><br><span class="line">  Vector3 bounding_box_max = <span class="number">7</span>;</span><br><span class="line">  </span><br><span class="line">  Vector3 pos_point = <span class="number">8</span>;</span><br><span class="line">  <span class="type">bool</span> is_player = <span class="number">9</span>;</span><br><span class="line">  <span class="type">uint32</span> seq_num = <span class="number">10</span>;</span><br><span class="line">  <span class="type">uint32</span> health = <span class="number">11</span>;</span><br><span class="line">  <span class="type">uint32</span> weapon = <span class="number">12</span>; </span><br><span class="line">  <span class="keyword">repeated</span> <span class="type">bool</span> wasd = <span class="number">13</span>; </span><br><span class="line">  <span class="type">bool</span> space = <span class="number">14</span>;</span><br><span class="line">  <span class="type">uint32</span> lastticks = <span class="number">15</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">message </span><span class="title class_">ClientHello</span> &#123;</span><br><span class="line">  <span class="type">uint32</span> code = <span class="number">1</span>; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">message </span><span class="title class_">ServerHello</span> &#123;</span><br><span class="line">  <span class="type">uint32</span> code = <span class="number">1</span>; </span><br><span class="line">  <span class="type">uint32</span> playerid = <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="comment">// EntityStateBatch</span></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="keyword">message </span><span class="title class_">EntityStateBatch</span> &#123;</span><br><span class="line">  <span class="keyword">repeated</span> PEntityState entity_state = <span class="number">1</span>; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">message </span><span class="title class_">GameMessage</span> &#123;</span><br><span class="line">  <span class="keyword">oneof</span> payload &#123;</span><br><span class="line">    PInputState input_state = <span class="number">1</span>;</span><br><span class="line">    EntityStateBatch entity_state_batch = <span class="number">2</span>;</span><br><span class="line">    ClientHello chello = <span class="number">3</span>;</span><br><span class="line">    ServerHello shello = <span class="number">4</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体而言, 所有的消息被设计为<strong>“信封式”</strong>: 每一种消息都被包装为一个GameMessage消息. <code>oneof</code>关键字是说, 所有的消息负载只可能是下列三种: </p>
+<ul>
+<li><code>PInputState</code> 玩家的输入信息结构体</li>
+<li><code>EntityStateBatch</code> 实体列表结构体, 表示世界状态</li>
+<li><code>ClientHello</code> 用于发送协议握手时的”打招呼”消息</li>
+<li><code>ServerHello</code> 发送协议握手时服务器的”回应打招呼”消息</li>
+</ul>
+<p>观察该proto文件, 每个输入状态<code>PInputState</code>包括wasd键, 空格键的事件是按下还是松开, 鼠标偏移量. </p>
+<p>这里涉及到一个有趣的讨论, 即客户端程序是应该记录每一帧各种按键的”是否正在按”信息, 从而在每一个物理帧形成一个输入数据包; 还是应该记录每一次按键按下/松开事件, 根据这些特殊事件形成输入数据包. </p>
+<p>前者的优势在于, 它的实现更为自然, 而且天然契合物理帧本身的定义, 这种方案的语义是”每一帧玩家都给予游戏一个推动力”, 因此只需要在每一帧中简单判断玩家的某键是否按下即可, 实现难度低. 后者则不那么直观, 需要<code>World</code>自己维护玩家当前每个键的按下状态, 再转化成前一种方案的解决方案. 此外, 这样做也导致按键的按下状态称为玩家状态的一部分, 需要在一切涉及实体状态的通讯中提及. 然而, 后者很显然是更先进的方案: 它不必每一个物理帧都向服务器发送一次输入请求. 这个简单的优点足以覆盖其所有的缺点. </p>
+<p>接下来观察<code>PEntityState</code>, 这个消息结构记录每个实体的所有状态. 由于消息中无法直接表达C++中的继承和派生关系, 就需要在消息中添加额外的字段<code>is_player</code>来指示该实体是否是玩家. 至于多余的字段消息, 可以通过<code>protobuf</code>解析时提供的<code>has_value()</code>函数判断剩余字段是否存在, 因此不必担心这些额外的字段会在实体不是玩家时消耗额外的带宽. </p>
+<h5 id="协议设计-C-S握手"><a href="#协议设计-C-S握手" class="headerlink" title="协议设计: C/S握手"></a>协议设计: C/S握手</h5><p>开始游戏的第一步总是客户端与服务器”相认”. 毕竟认识了才能玩在一起. 在一切尚未开始的时候, 客户端向服务端发送一个<code>ClientHello</code>消息, 携带一个不重数表明自己的身份. 接着, 服务器收到该<code>ClientHello</code>消息, 得到了该客户端的识别码(刚才发送的不重数), 在自己的世界<code>World</code>中根据空余ID创建一个玩家, 并保存创建玩家时分配的ID. 接着, 构造一个<code>ServerHello</code>消息, 携带客户端刚刚发出的识别码, 返回给客户端. 客户端判断服务端返回的识别码是否与刚才自己发送的一样, 接着在自己的世界<code>World</code>根据刚才获得的ID创建一个本地玩家, 接下来该客户端所有的输入都将被重定向到客户端和服务端世界的该ID中. </p>
+<p>经过上述流程, 客户端确定了自己的<strong>本地玩家ID</strong>, 服务端确定了<strong>接入点(UDP套接字)与客户端识别码的映射</strong>, 以及<strong>客户端识别码与世界中玩家的映射</strong>, 以便此后收到客户端发来的输入请求(还记得协议输入字段中包含的<code>player_id</code>字段吗?)发送到服务端世界指示的ID中. </p>
+<h5 id="协议设计-游戏进行"><a href="#协议设计-游戏进行" class="headerlink" title="协议设计: 游戏进行"></a>协议设计: 游戏进行</h5><p>握手完毕后, 客户端将开始将每一个输入发送到两个位置: </p>
+<ul>
+<li>通过<code>Network</code>类发送到服务器上</li>
+<li>通过本地无锁队列发送到客户端中</li>
+</ul>
+<p>与此同时, 客户端积极接受服务器广播的每一个世界状态消息, 一旦接到就放入缓冲区(实际上, 这里使用的也是双缓冲技术), 在下一次的世界更新前立刻应用新的世界状态. 如果这次世界缓冲区中没有新的权威世界状态, 就按部就班更新. 实际上, 这样按部就班的更新就是插值的实现方法: 当客户端不知本物理帧的权威世界状态时, 就假定没有其他玩家的输入的情况下自顾自更新世界状态, 这样, 大部分物理效果和小于客户端更新频率/服务端广播频率的操作都将被平滑和加帧, 这样就满足了4,5条需求, 同时也利用了情况9. 图可以如此表示:</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io">dudujerry</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io/2025/08/21/quickfps/">https://dudujerry452.github.io/2025/08/21/quickfps/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dudujerry452.github.io" target="_blank">dudujerry的Coding世界!</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/c/">c++</a><a class="post-meta__tags" href="/tags/go/">go</a><a class="post-meta__tags" href="/tags/FPS/">FPS</a><a class="post-meta__tags" href="/tags/game/">game</a><a class="post-meta__tags" href="/tags/network/">network</a><a class="post-meta__tags" href="/tags/asio/">asio</a><a class="post-meta__tags" href="/tags/multiple-thread/">multiple thread</a></div><div class="post-share"><div class="social-share" data-image="/images/quickfps/pic1.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/08/21/db-sql/" title="SQL笔记"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">SQL笔记</div></div><div class="info-2"><div class="info-item-1">SQL命令查询结构基本结构123select 列名    from 表名    where 条件表达式 产生一个关系作为结果，其中from中引用的表之间使用笛卡尔积连接 示例：给出所有女同学的姓名： 1select SNAME from S where SSEX = &#x27;女&#x27; 详细结构1234567select [ALL | DISTINCT] &lt;列名&gt;[, &lt;列名&gt; ] ...from &lt;表名&gt; [, &lt;表名&gt; ] ...[where &lt;行条件表达式&gt;][group by &lt;列名&gt; [, &lt;列名&gt; ] ...][having &lt;条件表达式&gt;][order by &lt;列名&gt; [asc | desc] ...] 工作过程：  读取from子句的表或视图做笛卡尔积 where子句找出满足条件表达式的元组 按group by子句指定列名分组，值相等的元素为一组，每个组产生结果表中的一条记录。可在每组中与聚集函数；若group子句带having，则只有满足条件的组才...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/02/18/ubuntu-2404-change-source/" title="如何在Ubuntu24.04更新软件源"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-18</div><div class="info-item-2">如何在Ubuntu24.04更新软件源</div></div><div class="info-2"><div class="info-item-1">与Ubuntu 22不同，从Ubuntu24.04开始软件源配置位置被更改为 /etc/apt/source.list -&gt; /etc/apt/source.list.d/ubuntu.sources 打开终端修改软件源配置文件，删除原有配置，更改为 12345Types: debURIs: https://mirrors.tuna.tsinghua.edu.cn/ubuntu/Suites: noble noble-updates noble-securityComponents: main restricted universe multiverseSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg 更新源 1sudo apt-get update 若此时仍无法更新（提示Ign），则更新DNS： 1sudo vim /etc/systemd/resolved.conf 找到并修改 12DNS=8.8.8.8 8.8.4.4FallbackDNS=1.1.1.1 1.0.0.1 接着重启网络服务 1sudo ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dudujerry</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dudujerry452"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/dudujerry452" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:dudujerry452@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Love & Peace</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5"><span class="toc-number">1.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%AE%E7%82%B9"><span class="toc-number">1.2.</span> <span class="toc-text">亮点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD"><span class="toc-number">1.3.</span> <span class="toc-text">功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84"><span class="toc-number">1.4.</span> <span class="toc-text">架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6"><span class="toc-number">1.4.1.</span> <span class="toc-text">运行时</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E6%9C%9F"><span class="toc-number">1.4.2.</span> <span class="toc-text">编译期</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E8%AE%B2%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">实现讲解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Game"><span class="toc-number">2.1.</span> <span class="toc-text">Game</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E4%BD%93"><span class="toc-number">2.1.1.</span> <span class="toc-text">实体</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%B0%E5%9B%BE%E5%85%83%E7%B4%A0"><span class="toc-number">2.1.2.</span> <span class="toc-text">地图元素</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%91%84%E5%83%8F%E6%9C%BA"><span class="toc-number">2.1.3.</span> <span class="toc-text">摄像机</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%96%E7%95%8C%E6%9B%B4%E6%96%B0"><span class="toc-number">2.1.4.</span> <span class="toc-text">世界更新</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%96%E7%95%8C%E7%8A%B6%E6%80%81"><span class="toc-number">2.1.5.</span> <span class="toc-text">世界状态</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B"><span class="toc-number">2.1.6.</span> <span class="toc-text">碰撞检测</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Renderer"><span class="toc-number">2.2.</span> <span class="toc-text">Renderer</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8C%E7%BC%93%E5%86%B2"><span class="toc-number">2.2.1.</span> <span class="toc-text">双缓冲</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Network"><span class="toc-number">2.3.</span> <span class="toc-text">Network</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%86%E6%9E%B6%E9%80%89%E6%8B%A9"><span class="toc-number">2.3.1.</span> <span class="toc-text">框架选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.3.2.</span> <span class="toc-text">异步模型设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.3.3.</span> <span class="toc-text">协议设计</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1-%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84"><span class="toc-number">2.3.3.1.</span> <span class="toc-text">协议设计: 消息结构</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1-C-S%E6%8F%A1%E6%89%8B"><span class="toc-number">2.3.3.2.</span> <span class="toc-text">协议设计: C&#x2F;S握手</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1-%E6%B8%B8%E6%88%8F%E8%BF%9B%E8%A1%8C"><span class="toc-number">2.3.3.3.</span> <span class="toc-text">协议设计: 游戏进行</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/08/21/quickfps/" title="简单实现一个多人在线FPS Demo"><img src="/images/quickfps/pic1.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="简单实现一个多人在线FPS Demo"/></a><div class="content"><a class="title" href="/2025/08/21/quickfps/" title="简单实现一个多人在线FPS Demo">简单实现一个多人在线FPS Demo</a><time datetime="2025-08-21T02:19:33.000Z" title="发表于 2025-08-21 10:19:33">2025-08-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/21/db-sql/" title="SQL笔记">SQL笔记</a><time datetime="2025-08-21T01:48:55.000Z" title="发表于 2025-08-21 09:48:55">2025-08-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/21/db-summary/" title="数据库总结">数据库总结</a><time datetime="2025-08-21T01:39:18.000Z" title="发表于 2025-08-21 09:39:18">2025-08-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/20/discrete-math/" title="从集合论到置换群">从集合论到置换群</a><time datetime="2025-08-20T13:33:19.000Z" title="发表于 2025-08-20 21:33:19">2025-08-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/08/20/nixos-install/" title="如何安装NixOS"><img src="/images/nixos.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何安装NixOS"/></a><div class="content"><a class="title" href="/2025/08/20/nixos-install/" title="如何安装NixOS">如何安装NixOS</a><time datetime="2025-08-20T08:20:54.000Z" title="发表于 2025-08-20 16:20:54">2025-08-20</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2025 By dudujerry</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
