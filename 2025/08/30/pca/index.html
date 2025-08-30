@@ -1,0 +1,275 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>PCA主成分分析 | dudujerry的Coding世界!</title><meta name="author" content="dudujerry"><meta name="copyright" content="dudujerry"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍主成分分析（Principal Component Analysis，PCA）是一种统计方法，通过正交变换将一组存在相关性的变量转换为一组线性不相关的变量，转换后的这组变量叫主成分。 本质上，是通过某种线性投影，在尽量保证信息&#x2F;特征不丢失的情况下，将高维的数据映射到低维的空间中。 符号约定 设存在M个样本${X^1, X^2, …, X^M}$，每个样本由N维特征$X^i &#x3D; (x_1^i,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PCA主成分分析">
+<meta property="og:url" content="https://dudujerry452.github.io/2025/08/30/pca/index.html">
+<meta property="og:site_name" content="dudujerry的Coding世界!">
+<meta property="og:description" content="介绍主成分分析（Principal Component Analysis，PCA）是一种统计方法，通过正交变换将一组存在相关性的变量转换为一组线性不相关的变量，转换后的这组变量叫主成分。 本质上，是通过某种线性投影，在尽量保证信息&#x2F;特征不丢失的情况下，将高维的数据映射到低维的空间中。 符号约定 设存在M个样本${X^1, X^2, …, X^M}$，每个样本由N维特征$X^i &#x3D; (x_1^i,">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dudujerry452.github.io/img/girl_avater.jpg">
+<meta property="article:published_time" content="2025-08-30T11:11:17.000Z">
+<meta property="article:modified_time" content="2025-08-30T13:57:42.107Z">
+<meta property="article:author" content="dudujerry">
+<meta property="article:tag" content="algorithms">
+<meta property="article:tag" content="pca">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="linear algebra">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dudujerry452.github.io/img/girl_avater.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PCA主成分分析",
+  "url": "https://dudujerry452.github.io/2025/08/30/pca/",
+  "image": "https://dudujerry452.github.io/img/girl_avater.jpg",
+  "datePublished": "2025-08-30T11:11:17.000Z",
+  "dateModified": "2025-08-30T13:57:42.107Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dudujerry",
+      "url": "https://dudujerry452.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dudujerry452.github.io/2025/08/30/pca/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PCA主成分分析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/lizard.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dudujerry的Coding世界!</span></a><a class="nav-page-title" href="/"><span class="site-name">PCA主成分分析</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">PCA主成分分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-30T11:11:17.000Z" title="发表于 2025-08-30 19:11:17">2025-08-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-30T13:57:42.107Z" title="更新于 2025-08-30 21:57:42">2025-08-30</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">702</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>2分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>主成分分析（Principal Component Analysis，PCA）是一种统计方法，通过正交变换将一组存在相关性的变量转换为一组线性不相关的变量，转换后的这组变量叫主成分。</p>
+<p>本质上，是通过某种线性投影，在尽量保证信息/特征不丢失的情况下，将高维的数据映射到低维的空间中。</p>
+<h2 id="符号约定"><a href="#符号约定" class="headerlink" title="符号约定"></a>符号约定</h2><ul>
+<li>设存在M个样本${X^1, X^2, …, X^M}$，每个样本由N维特征$X^i = (x_1^i, x_2^i, …, x_n^i)$；</li>
+<li>元素用小写字母表示：x，向量用大写字母表示：X；</li>
+<li>对元素而言，特征序号用下标i表示，样本序号用上标j表示：$x_i^j$；对样本而言，样本序号用下标j表示：$X_j$</li>
+</ul>
+<h1 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h1><p>流程为：</p>
+<ol>
+<li>去平均值</li>
+<li>计算协方差矩阵</li>
+<li>计算协方差矩阵的特征值和特征向量</li>
+<li>排序特征值</li>
+<li>保留前k个最大的特征值对应的特征向量</li>
+<li>将原始特征投影到上述k维空间中</li>
+</ol>
+<h2 id="去平均值"><a href="#去平均值" class="headerlink" title="去平均值"></a>去平均值</h2><p>首先，对每个特征求平均值：</p>
+<script type="math/tex; mode=display">
+\bar x_i = \frac{1}{M}\sum_{j=1}^{M}x_i^j ~~~~~\forall i \in 1,2,...,N \\</script><p>再将每个样本的每个特征都减去自身的均值： </p>
+<script type="math/tex; mode=display">
+x^j_i := x^j_i - \bar x_i \\
+\forall i\in 1,2,...,N;~j\in 1,2,...,M\\</script><h2 id="求协方差矩阵"><a href="#求协方差矩阵" class="headerlink" title="求协方差矩阵"></a>求协方差矩阵</h2><p>协方差矩阵（C）的定义如下：</p>
+<script type="math/tex; mode=display">
+C = 
+\begin{pmatrix}
+cov(x_1, x_1) & ... & cov(x_1, x_N) \\
+... & ... & ... \\
+cov(x_N, x_1) & ... & cov(x_N, x_N) \\
+\end{pmatrix}</script><p>其中协方差的定义，回忆一下为：</p>
+<script type="math/tex; mode=display">
+cov(x_a, x_b) = \frac{\sum_{j=1}^{M}(x_a^j - \bar x_i)(x_b^j - \bar x_i)}{M-1}</script><h2 id="求C的特征值和其对应的特征向量"><a href="#求C的特征值和其对应的特征向量" class="headerlink" title="求C的特征值和其对应的特征向量"></a>求C的特征值和其对应的特征向量</h2><p>根据</p>
+<script type="math/tex; mode=display">
+Cu = \lambda u</script><p>可求出N个（特征值，特征向量）对，选取前k大的特征值对应的二元组$[(\lambda_1, u_1), (\lambda_2, u_2), …, (\lambda_k, u_k)]$，其特征向量作为行向量组成特征矩阵： </p>
+<script type="math/tex; mode=display">
+U = 
+\begin{pmatrix}
+u_1^T \\
+u_2^R \\
+... \\
+u_N^T
+\end{pmatrix}</script><h2 id="投影到新的k维空间"><a href="#投影到新的k维空间" class="headerlink" title="投影到新的k维空间"></a>投影到新的k维空间</h2><p>对样本j，有：</p>
+<script type="math/tex; mode=display">
+Y^j = 
+\begin{pmatrix}
+y_1^j \\
+y_2^j \\
+... \\
+y_k^j
+\end{pmatrix}
+ = 
+\begin{pmatrix}
+u_1^T \cdot X_j^T \\
+u_2^T \cdot X_j^T \\
+... \\
+u_k^T \cdot X_j^T
+\end{pmatrix}
+ = UX_j^T</script><p>新的k维向量即为降维后的主成分。 </p>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>有这么一个说法叫最大方差理论，方差越大，信息量就越大（当然有一定约束条件）。因此，投影后的信息方差越大越好。我们来计算一下：</p>
+<script type="math/tex; mode=display">
+D(Y^j) = \frac{1}{M}\sum_{j=1}^{M}(Y^j - \bar Y^j)^2</script><p>由于经过去均值操作，所以$avg(X^j) = avg(Y^j) = \bold 0$，因此可继续化简：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+D(Y^j) &= \frac{1}{M}\sum_{j=1}^{M}(Y^j - \bar Y^j)^2 \\ 
+&= \frac{1}{M}\sum_{j=1}^{M}(Y^j)^2 \\
+&= \frac{1}{M}\sum(UX_j^T)^2 \\
+\end{aligned}</script><h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Wang_Dou_Dou_/article/details/118639143">数学建模——PCA主成分分析</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lanyuelvyun/article/details/82384179">PCA：详细解释主成分分析</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io">dudujerry</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io/2025/08/30/pca/">https://dudujerry452.github.io/2025/08/30/pca/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dudujerry452.github.io" target="_blank">dudujerry的Coding世界!</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/algorithms/">algorithms</a><a class="post-meta__tags" href="/tags/pca/">pca</a><a class="post-meta__tags" href="/tags/python/">python</a><a class="post-meta__tags" href="/tags/linear-algebra/">linear algebra</a></div><div class="post-share"><div class="social-share" data-image="/img/girl_avater.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/08/30/cmake-external-project/" title="如何在CMake中独立构建外部项目"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">如何在CMake中独立构建外部项目</div></div><div class="info-2"><div class="info-item-1">有时候我们的CMake项目依赖两个项目，但这两个项目包含了相同的库，这些库构建相同名称的目标，但库版本以及库源代码有一些微小的改动。为了不破坏依赖项目的独立性以方便后续更新，我们需要一个完全独立的方式来构建这些库，就像单独运行一次CMake构建流程一样。 FetchContent对那些高版本、良好配置的Cmake项目，我们可以直接通过FetchContent获取源代码并获得其构建目标，例如声明对spdlog的依赖，并使其可用（下载）：  123456FetchContent_Declare(    spdlog    GIT_REPOSITORY https://github.com/gabime/spdlog.git    GIT_TAG        v1.14.1)FetchContent_MakeAvailable(spdlog) 之后，构建目标已经进入Cmake构建流程，直接使用即可： 1target_link_libraries(my_app PRIVATE spdlog::spdlog) ExternalProject_Add较为重型的方案，同时适合网络拉取和包含本...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/08/29/markov-chain/" title="MP和MDP"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-29</div><div class="info-item-2">MP和MDP</div></div><div class="info-2"><div class="info-item-1">马尔科夫过程马尔科夫性马尔科夫性是指，只要知道现在，将来和过去是条件独立的，设t时刻状态为$S_t$，马尔科夫性可表示为  P(S_{t+1} | S_t) = P(S_{t+1}|S_1,...,S_t)即历史上所有状态下与未来的相关信息都在$S_t$上体现出来。这也说明，马尔科夫性的成立依赖于适当的状态选取，一般“适当”的意思是要求环境全观测，例如棋局中全部棋子的位置。 状态转移矩阵状态转移概率指从一个马尔科夫状态s跳转到后续状态s’的概率：  P_{ss'} = P(S_{t+1} = s' | S_t = s)所有状态组成行，后继状态组成列，得到状态转移矩阵：  P = \begin{pmatrix}  P_{11} & ... & P_{1n} \\ ... & ... & ... \\ P_{n1} & ... & P_{nn}  \end{pmatrix} P表示所有状态转移集合 每行元素相加为1  马尔科夫过程（MP）马尔科夫过程（Markov porcess, MP）是一些马尔科夫状态和它们之间转移概率组成的若干序列。 MP可用二元组定义：   S代表状态集合 ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dudujerry</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dudujerry452"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/dudujerry452" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:dudujerry452@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">mathjax慢——公式渲染不出来请等一会</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E7%BA%A6%E5%AE%9A"><span class="toc-number">1.1.</span> <span class="toc-text">符号约定</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%BB%E5%B9%B3%E5%9D%87%E5%80%BC"><span class="toc-number">2.1.</span> <span class="toc-text">去平均值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%82%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5"><span class="toc-number">2.2.</span> <span class="toc-text">求协方差矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%82C%E7%9A%84%E7%89%B9%E5%BE%81%E5%80%BC%E5%92%8C%E5%85%B6%E5%AF%B9%E5%BA%94%E7%9A%84%E7%89%B9%E5%BE%81%E5%90%91%E9%87%8F"><span class="toc-number">2.3.</span> <span class="toc-text">求C的特征值和其对应的特征向量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%95%E5%BD%B1%E5%88%B0%E6%96%B0%E7%9A%84k%E7%BB%B4%E7%A9%BA%E9%97%B4"><span class="toc-number">2.4.</span> <span class="toc-text">投影到新的k维空间</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">4.</span> <span class="toc-text">参考文献</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/30/pca/" title="PCA主成分分析">PCA主成分分析</a><time datetime="2025-08-30T11:11:17.000Z" title="发表于 2025-08-30 19:11:17">2025-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/30/cmake-external-project/" title="如何在CMake中独立构建外部项目">如何在CMake中独立构建外部项目</a><time datetime="2025-08-30T03:08:26.000Z" title="发表于 2025-08-30 11:08:26">2025-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/29/markov-chain/" title="MP和MDP">MP和MDP</a><time datetime="2025-08-29T12:51:19.000Z" title="发表于 2025-08-29 20:51:19">2025-08-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/28/genetic-algo/" title="遗传算法略解&amp;实践">遗传算法略解&amp;实践</a><time datetime="2025-08-28T08:08:53.000Z" title="发表于 2025-08-28 16:08:53">2025-08-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/08/21/quickfps/" title="简单实现一个多人在线FPS Demo"><img src="/images/quickfps/pic1.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="简单实现一个多人在线FPS Demo"/></a><div class="content"><a class="title" href="/2025/08/21/quickfps/" title="简单实现一个多人在线FPS Demo">简单实现一个多人在线FPS Demo</a><time datetime="2025-08-21T02:19:33.000Z" title="发表于 2025-08-21 10:19:33">2025-08-21</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2025 By dudujerry</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
