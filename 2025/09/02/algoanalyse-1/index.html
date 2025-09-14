@@ -1,0 +1,303 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>algoanalyse-1 | dudujerry的Coding世界!</title><meta name="author" content="dudujerry"><meta name="copyright" content="dudujerry"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="符号约定：  $\delta(s,v)$表示点$s,v$之间的最短路径。  广度优先搜索(Breadth-First Search)   伪代码略  返回：   $d[v]$，表示从源点s到v的最短路径长度 $\pi[v]$，表示v点的最短路径前驱  以上两数据描述了前驱子图(predecessor subgraph)，也是一棵最短路径树(shortest path tree)。该子图中没有环，包">
+<meta property="og:type" content="article">
+<meta property="og:title" content="algoanalyse-1">
+<meta property="og:url" content="https://dudujerry452.github.io/2025/09/02/algoanalyse-1/index.html">
+<meta property="og:site_name" content="dudujerry的Coding世界!">
+<meta property="og:description" content="符号约定：  $\delta(s,v)$表示点$s,v$之间的最短路径。  广度优先搜索(Breadth-First Search)   伪代码略  返回：   $d[v]$，表示从源点s到v的最短路径长度 $\pi[v]$，表示v点的最短路径前驱  以上两数据描述了前驱子图(predecessor subgraph)，也是一棵最短路径树(shortest path tree)。该子图中没有环，包">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dudujerry452.github.io/img/girl_avater.jpg">
+<meta property="article:published_time" content="2025-09-02T12:40:00.000Z">
+<meta property="article:modified_time" content="2025-09-02T12:44:41.139Z">
+<meta property="article:author" content="dudujerry">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dudujerry452.github.io/img/girl_avater.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "algoanalyse-1",
+  "url": "https://dudujerry452.github.io/2025/09/02/algoanalyse-1/",
+  "image": "https://dudujerry452.github.io/img/girl_avater.jpg",
+  "datePublished": "2025-09-02T12:40:00.000Z",
+  "dateModified": "2025-09-02T12:44:41.139Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dudujerry",
+      "url": "https://dudujerry452.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dudujerry452.github.io/2025/09/02/algoanalyse-1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'algoanalyse-1',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/lizard.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dudujerry的Coding世界!</span></a><a class="nav-page-title" href="/"><span class="site-name">algoanalyse-1</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">algoanalyse-1</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-09-02T12:40:00.000Z" title="发表于 2025-09-02 20:40:00">2025-09-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-09-02T12:44:41.139Z" title="更新于 2025-09-02 20:44:41">2025-09-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">832</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>符号约定：</p>
+<ul>
+<li>$\delta(s,v)$表示点$s,v$之间的最短路径。</li>
+</ul>
+<p><strong>广度优先搜索(Breadth-First Search)</strong> </p>
+<ul>
+<li><p>伪代码略</p>
+</li>
+<li><p>返回：</p>
+</li>
+<li><ul>
+<li>$d[v]$，表示从源点s到v的最短路径长度</li>
+<li>$\pi[v]$，表示v点的最短路径前驱</li>
+</ul>
+<p>以上两数据描述了前驱子图(predecessor subgraph)，也是一棵<strong>最短路径树(shortest path tree)</strong>。该子图中没有环，包含该联通分支的所有节点。</p>
+</li>
+</ul>
+<p>对广度优先搜索，我们需要证明： </p>
+<ul>
+<li>$\delta(s,v) = d[v]$</li>
+<li>$s\rightarrow v = s \rightarrow \pi[v]+(\pi[v],v)$</li>
+</ul>
+<p>Lem 1. <strong>Let G(V,E)为一个无权有向(无向)图，let $s\in V$为一个随意顶点，那么$\forall (u,v)\in E$，必定有$\delta(s,v) \leq \delta(s,u)+1$</strong></p>
+<ul>
+<li>Pf. 分情况讨论：</li>
+<li><ul>
+<li>如果s,u之间不可到达（s，u和s，v的可到达性相同），那么$\infty\leq \infty  + 1$</li>
+<li>如果s,u之间可到达，考虑由s,u之间的最短路径与(u,v)的拼接$<s,...,u,v>$，其长度等于$\delta(s,u)+1$。由定义，$\delta(s,v)$为s到v的最短路径，即对于G上任意从s到v的路径<s,...,v>的路径长度都小于$\delta(s,v)$，所以$\delta(s,v) \leq \delta(s,u)+1$。 </li>
+</ul>
+</li>
+</ul>
+<p>Lem 2. <strong>Let G(V,E)为一个无权有向(无向)图，BFS以s为源点运行得到d[v]，则$d[v] \geq \delta(s,v)$</strong></p>
+<ul>
+<li><p>Pf. 归纳假设法，假设题设成立，n为更新次数</p>
+</li>
+<li><p>n=0，d[s]=0=$\delta(s,s)$，$d[v]=\infty \geq\delta(s,v)$</p>
+</li>
+<li><p>设n=k时，$\forall v\in V, d[v]\geq \delta(s,v)$</p>
+</li>
+<li><p>当n=k+1时，设入队节点为x，其前驱节点为y。证明如下：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+d[x] &= d[y]+1 ~~~ 前驱\\
+&\geq \delta(s,v) +1~~~假设\\
+&\geq \delta(s,x) ~~~ Lem~1
+\end{aligned}</script><p>并且其他代码不会对$d$造成影响。</p>
+</li>
+<li><p>由于n=0成立，故n=1,2,3…成立，归纳法成立。</p>
+</li>
+</ul>
+<p>Lem 3. <strong>假设某时刻队列状态为$Q=<v_1, v_2, ..., v_r>$，$v_1$为队头，则满足</strong>:</p>
+<ul>
+<li>$d[v_r]\leq d[v_1] + 1$ (性质1)</li>
+<li>$d[v<em>i] \leq d[v</em>{i+1}]$ (性质2)</li>
+</ul>
+<p><strong>即队中元素小于队首+1，且队列单增</strong>。</p>
+<ul>
+<li><p>Pf. 归纳假设法，假设题设成立，考察入队和出队时是否满足。</p>
+</li>
+<li><p>n=0时，两条性质都满足。</p>
+</li>
+<li><p>假设n=k时，两条性质都满足</p>
+</li>
+<li><p>n=k+1时，入队</p>
+</li>
+<li><p>入队时，设x是入队的点，则必然存在y，而y发现x，于是d[x]=d[y]+1。因此，y一定是最近出队的点。</p>
+<p>我们考虑y出队前的队列$Q=<y, v_1, v_2, ..., v_r>$，由性质1可知：</p>
+<script type="math/tex; mode=display">
+d[v_r] \leq d[y]+1</script></li>
+</ul>
+<p>  上式代入d[x]=d[y]+1，得到$d[v_r]\leq d[x]$，性质1满足</p>
+<p>  考虑$<v_1,...,v_r>$，有两种情况：</p>
+<ul>
+<li><p>$d[v_1] = d[v_2] = … = d[v_r] = d[y]+1$，即目前队列的所有节点都是y的后继节点。这时，$d[v_r] = d[x]\Leftrightarrow d[x]\leq d[v_1]+1$</p>
+<script type="math/tex; mode=display">
+\exists j\in \{1,2,...,r\}, \\
+d[v_1] = ... = d[v_j] = d[y]  \\
+d[v_{j+1}] = ... = d[v_r] = d[y]+1</script><ul>
+<li>综上，两种情况都满足性质2.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>n=k+1时，出队</p>
+</li>
+<li><p>由于队列单调性不变，性质2自然满足；</p>
+<p>设x是出队的点，出队后队列为$Q=<v_1, v_2, ..., v_r>$，可推导出</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+d[x] \leq d[v_1] ~~~ 性质2\\
+d[v_r] &\leq d[x]+1 ~~~ 性质1\\
+&\leq d[v_1]+1~~~代入
+\end{aligned}</script><p>性质1也满足。</p>
+</li>
+<li><p>因此，出队时性质1和2均满足。</p>
+</li>
+<li><p>因为n=0时满足，因此n=1,2,3…时均满足，归纳完毕。</p>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io">dudujerry</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io/2025/09/02/algoanalyse-1/">https://dudujerry452.github.io/2025/09/02/algoanalyse-1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dudujerry452.github.io" target="_blank">dudujerry的Coding世界!</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/girl_avater.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/09/01/nash-equilibrium/" title="Nash均衡略解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Nash均衡略解</div></div><div class="info-2"><div class="info-item-1">简介Nash均衡是指在一个博弈问题中，对任意一个玩家，其他玩家的策略确定时，该玩家没有其他策略可以让其获益更多。  来看一个弱化版的Nash均衡：囚徒困境。这是一个：  对称博弈 非零和博弈 非合作博弈 完全信息博弈 静态博弈 有限博弈 纯策略 两人博弈 单次博弈  囚徒困境每个玩家有两个选择：  坦白 沉默  玩家决策导致的后果（判刑年数）如表：          玩家1\玩家2 坦白 沉默     坦白 (8,8) (0,11)   沉默 (11,0) (1,1)     双方都选择坦白，则都判8年；都选择沉默，则都判1年；否则坦白的判0年，沉默的11年。 不考虑除了利益关系的策略考量，我们考虑每个玩家的选择。  对方选坦白，选坦白判8，沉默判11 对方选沉默，选坦白判0，沉默判1  我们发现无论对方策略如何坦白都是更优解，这时我们称“坦白”为严格最优(strongly dominates)策略。它仍是一个Nash均衡，尽管它并不关心另一个玩家选择的策略，但如果给定另一个玩家的选择，依然不存在除了“坦白”以外的最优策略，这说明每个玩家都有固定的策略，这是一个“纯策略”纳什均衡...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dudujerry</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dudujerry452"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/dudujerry452" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:dudujerry452@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">mathjax慢——公式渲染不出来请等一会</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/09/02/algoanalyse-1/" title="algoanalyse-1">algoanalyse-1</a><time datetime="2025-09-02T12:40:00.000Z" title="发表于 2025-09-02 20:40:00">2025-09-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/09/01/nash-equilibrium/" title="Nash均衡略解">Nash均衡略解</a><time datetime="2025-09-01T11:08:02.000Z" title="发表于 2025-09-01 19:08:02">2025-09-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/30/pca/" title="PCA主成分分析">PCA主成分分析</a><time datetime="2025-08-30T11:11:17.000Z" title="发表于 2025-08-30 19:11:17">2025-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/30/cmake-external-project/" title="如何在CMake中独立构建外部项目">如何在CMake中独立构建外部项目</a><time datetime="2025-08-30T03:08:26.000Z" title="发表于 2025-08-30 11:08:26">2025-08-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/29/markov-chain/" title="MP和MDP">MP和MDP</a><time datetime="2025-08-29T12:51:19.000Z" title="发表于 2025-08-29 20:51:19">2025-08-29</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2025 By dudujerry</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
