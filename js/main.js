@@ -900,6 +900,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (GLOBAL_CONFIG_SITE.pageType === 'post') {
       addPostOutdateNotice()
       GLOBAL_CONFIG.relativeDate.post && relativeDate(document.querySelectorAll('#post-meta time'))
+      // 文章页默认折叠右侧栏
+      const asideStatus = btf.saveToLocal.get('aside-status')
+      if (!asideStatus) {
+        document.documentElement.classList.add('hide-aside')
+      }
     } else {
       GLOBAL_CONFIG.relativeDate.homepage && relativeDate(document.querySelectorAll('#recent-posts time'))
       GLOBAL_CONFIG.runtime && addRuntime()
