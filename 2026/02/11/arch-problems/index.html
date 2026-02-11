@@ -1,0 +1,229 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>arch_problems | dudujerry的Coding世界!</title><meta name="author" content="dudujerry"><meta name="copyright" content="dudujerry"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景:  Thinkpad X1 Carbon gen13 Aura1Linux dudujerry 6.18.7-arch1-1 #1 SMP PREEMPT_DYNAMIC Sat, 24 Jan 2026 00:47:39 +0000 x86_64 GNU&#x2F;Linux 大部分东西开箱即用, 遇坑如下:  字体问题未安装字体时, emoji和中文都不会正常显示. 安装中文字体默认按照日文渲染，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="arch_problems">
+<meta property="og:url" content="https://dudujerry452.github.io/2026/02/11/arch-problems/index.html">
+<meta property="og:site_name" content="dudujerry的Coding世界!">
+<meta property="og:description" content="背景:  Thinkpad X1 Carbon gen13 Aura1Linux dudujerry 6.18.7-arch1-1 #1 SMP PREEMPT_DYNAMIC Sat, 24 Jan 2026 00:47:39 +0000 x86_64 GNU&#x2F;Linux 大部分东西开箱即用, 遇坑如下:  字体问题未安装字体时, emoji和中文都不会正常显示. 安装中文字体默认按照日文渲染，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dudujerry452.github.io/img/girl_avater.jpg">
+<meta property="article:published_time" content="2026-02-11T08:22:52.000Z">
+<meta property="article:modified_time" content="2026-02-11T08:30:22.111Z">
+<meta property="article:author" content="dudujerry">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="arch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dudujerry452.github.io/img/girl_avater.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "arch_problems",
+  "url": "https://dudujerry452.github.io/2026/02/11/arch-problems/",
+  "image": "https://dudujerry452.github.io/img/girl_avater.jpg",
+  "datePublished": "2026-02-11T08:22:52.000Z",
+  "dateModified": "2026-02-11T08:30:22.111Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dudujerry",
+      "url": "https://dudujerry452.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dudujerry452.github.io/2026/02/11/arch-problems/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'arch_problems',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/lizard.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dudujerry的Coding世界!</span></a><a class="nav-page-title" href="/"><span class="site-name">arch_problems</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">arch_problems</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-02-11T08:22:52.000Z" title="发表于 2026-02-11 16:22:52">2026-02-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-11T08:30:22.111Z" title="更新于 2026-02-11 16:30:22">2026-02-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>背景: </p>
+<p>Thinkpad X1 Carbon gen13 Aura<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Linux dudujerry 6.18.7-arch1-1 #1 SMP PREEMPT_DYNAMIC Sat, 24 Jan 2026 00:47:39 +0000 x86_64 GNU/Linux</span><br></pre></td></tr></table></figure></p>
+<p>大部分东西开箱即用, 遇坑如下: </p>
+<h1 id="字体问题"><a href="#字体问题" class="headerlink" title="字体问题"></a>字体问题</h1><p>未安装字体时, emoji和中文都不会正常显示. 安装中文字体默认按照日文渲染，导致”包, 称”等字少一个竖. 需要配置字体conf. </p>
+<h1 id="触摸板tap"><a href="#触摸板tap" class="headerlink" title="触摸板tap"></a>触摸板tap</h1><p>编辑sway的config文件中的input时, 其管理的字段若有名称错误, 并不会提示错误, 坑了我很久. 比如<code>tap_drag</code>在<code>swaymsg -t get_inputs</code>中显示为<code>tap_drag</code>, 实际需要用<code>drag</code>来配置.  </p>
+<p>可以通过<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">input type:touchpad &#123;</span><br><span class="line">    tap enabled</span><br><span class="line">    drag enabled </span><br><span class="line">    drag_lock disabled</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>等来启动轻点和拖动, 并禁止拖动锁定. (拖动锁定的体验极差)</p>
+<h1 id="pwm调光问题"><a href="#pwm调光问题" class="headerlink" title="pwm调光问题"></a>pwm调光问题</h1><p>某些笔记本自带的低亮度pwm调光非常伤眼（我的眼睛看一个小时就很酸疼了）， 必须第一时间设置. 用brightnessctl将最低亮度设置为60%, 然后用wl-gammarelay-rs降低gamma值模拟低亮度效果, 副作用是会导致黑色发灰. </p>
+<p>sway配置:<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">exec wl-gammarelay-rs</span><br><span class="line">exec_always brightnessctl set 60%</span><br><span class="line">bindsym --locked XF86MonBrightnessDown exec busctl --user -- call rs.wl-gammarelay / rs.wl.gammarelay UpdateBrightness d -0.05</span><br><span class="line">bindsym --locked XF86MonBrightnessUp exec busctl --user -- call rs.wl-gammarelay / rs.wl.gammarelay UpdateBrightness d +0.05</span><br></pre></td></tr></table></figure></p>
+<h1 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h1><p>用dae代理, 大模型直接写出<code>/etc/dae/config.dae</code>配置. </p>
+<h1 id="指纹解锁"><a href="#指纹解锁" class="headerlink" title="指纹解锁"></a>指纹解锁</h1><p>我希望开机进入tty界面时能自动启动一个指纹认证脚本, 用fprintd. 这里注意fprintd默认是不开放给普通用户使用的, 需要polkit设置权限. </p>
+<p>设置后, 用<code>fprintd-enroll</code>录入本用户指纹. </p>
+<p>编写指纹认证脚本<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"># ==============================================================================</span><br><span class="line">#                 Fingerprint Login Script for Linux TTY</span><br><span class="line"># ==============================================================================</span><br><span class="line"></span><br><span class="line"># --- 配置 ---</span><br><span class="line"># 请务必修改为你的实际用户名</span><br><span class="line">USER=&quot;dudujerry&quot;</span><br><span class="line"># 设置最大重试次数</span><br><span class="line">MAX_RETRIES=3</span><br><span class="line"></span><br><span class="line"># --- 核心：确保必要的服务正在运行 ---</span><br><span class="line"># fprintd 依赖 dbus</span><br><span class="line">systemctl is-active --quiet dbus || systemctl start dbus</span><br><span class="line">systemctl is-active --quiet fprintd || systemctl start fprintd</span><br><span class="line"></span><br><span class="line"># --- 准备工作 ---</span><br><span class="line">retry=0</span><br><span class="line"># 将当前tty设备名保存下来，以便明确地与之交互</span><br><span class="line"># tty命令会输出当前所在的终端设备，例如 /dev/tty1</span><br><span class="line">CURRENT_TTY=$(tty)</span><br><span class="line"></span><br><span class="line"># 清理屏幕并显示欢迎信息</span><br><span class="line">clear</span><br><span class="line">echo &quot;=====================================&quot;</span><br><span class="line">echo &quot;  Arch Linux Fingerprint Login ($CURRENT_TTY)&quot;</span><br><span class="line">echo &quot;=====================================&quot;</span><br><span class="line">echo &quot;  User: $USER&quot;</span><br><span class="line">echo &quot;  Swipe your fingerprint to login...&quot;</span><br><span class="line">echo &quot;  Max retries: $MAX_RETRIES&quot;</span><br><span class="line">echo &quot;=====================================&quot;</span><br><span class="line">echo &quot;&quot;</span><br><span class="line"></span><br><span class="line"># --- 验证循环 ---</span><br><span class="line">while [ $retry -lt $MAX_RETRIES ]; do</span><br><span class="line">    # 核心修正:</span><br><span class="line">    # 1. 使用 `sudo -u $USER` 代替 `su`。它在切换用户时能更好地处理权限和环境。</span><br><span class="line">    # 2. 正确传递D-Bus地址，并直接执行命令，无需复杂的shell嵌套。</span><br><span class="line">    # 3. 将 fprintd-verify 的标准输出和标准错误都重定向到当前TTY，确保用户能看到提示。</span><br><span class="line">    #    fprintd-verify 的提示信息是打印到标准错误的，所以需要 `2&gt; $CURRENT_TTY`。</span><br><span class="line">    # 4. `fprintd-verify` 命令本身不接受用户名参数。</span><br><span class="line">    sudo -u $USER DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket fprintd-verify &gt; $CURRENT_TTY 2&gt; $CURRENT_TTY</span><br><span class="line">    </span><br><span class="line">    # 获取 fprintd-verify 的退出码</span><br><span class="line">    verify_result=$?</span><br><span class="line"></span><br><span class="line">    # --- 结果判断 ---</span><br><span class="line">    # 验证成功 (退出码 0)</span><br><span class="line">    if [ $verify_result -eq 0 ]; then</span><br><span class="line">        echo -e &quot;\n[SUCCESS] Fingerprint verified! Logging in as $USER...&quot;</span><br><span class="line">        sleep 1</span><br><span class="line">        # 使用 exec login -f $USER 来无密码登录用户，并替换当前脚本进程</span><br><span class="line">        exec login -f $USER</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    # 验证失败</span><br><span class="line">    retry=$((retry + 1))</span><br><span class="line">    remaining=$((MAX_RETRIES - retry))</span><br><span class="line">    </span><br><span class="line">    if [ $remaining -gt 0 ]; then</span><br><span class="line">        echo -e &quot;\n[FAILED] Fingerprint mismatch or error. Please try again. ($remaining retries left)&quot;</span><br><span class="line">        echo &quot;&quot;</span><br><span class="line">    fi</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line"># --- 重试失败后回退 ---</span><br><span class="line">echo -e &quot;\n[ERROR] All fingerprint authentication attempts failed.&quot;</span><br><span class="line">echo &quot;Fallback to password-based login...&quot;</span><br><span class="line">sleep 2</span><br><span class="line"># 执行常规的 login 程序，让用户输入密码</span><br><span class="line">exec login</span><br></pre></td></tr></table></figure></p>
+<p>完成后覆盖tty1行为, 输入<code>systemctl edit getty@tty1.service</code>, 修改为:<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[Service]</span><br><span class="line">ExecStart=</span><br><span class="line"># 解释：</span><br><span class="line"># --skip-login (-n): 不提示输入用户名，直接运行后面的程序</span><br><span class="line"># --noclear: 不清屏</span><br><span class="line"># --login-program: 指定我们的指纹脚本，而不是默认的 /bin/login</span><br><span class="line"># $TERM: 传递终端类型</span><br><span class="line">ExecStart=-/sbin/agetty --skip-login --noclear --login-program /usr/local/bin/fingerprint-login %I $TERM</span><br></pre></td></tr></table></figure></p>
+<h1 id="x11缩放"><a href="#x11缩放" class="headerlink" title="x11缩放"></a>x11缩放</h1><p>直接使用wayland自带的xwayland时, xwayland会接到默认dpi=92的画布参数, 渲染出来大小不够, 使得wayland显示时进行nearst手动放大, 导致模糊. 需要禁用xwayland并安装xwayland-satellite, sway配置如下: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xwayland disabled</span><br><span class="line">exec xwayland-satellite # x11 应用启动后需要设置DISPLAY=:0</span><br><span class="line">exec_always &quot;sleep 2 &amp;&amp; DISPLAY=:0 xrdb -merge ~/.Xresources&quot; # 加载X资源设置DPI</span><br></pre></td></tr></table></figure>
+<p>注: <code>~/.Xresources</code>为”Xft.dpi: 192”</p>
+<p>注意这样设置后, 所有x11程序在启动时必须获得DISPLAY=:0以连接到xwayland-satellite的x11服务器.<br>并且, 输入法在启动时也要设置DISPLAY=:0以让程序有机会注册输入法. 为了同步输入法dpi, 还需要设置xdpi, 方式如上. </p>
+<p>关于输入法的更详细信息, 详见另一篇博文.  </p>
+<p>另外, 对于那些同时支持x11和wayland的程序, 比如linuxqq, 有时需要启动参数强制以wayland启动. </p>
+<p>写完后深感无力, 格式化转nixos. </p>
+<hr>
+<p>2026.2.11</p>
+<p>已转niri, niri自带xwayland-satellite, 支持x11程序动态缩放。 非必要不建议使用sway, 除非依赖老的i3配置。 </p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io">dudujerry</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io/2026/02/11/arch-problems/">https://dudujerry452.github.io/2026/02/11/arch-problems/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dudujerry452.github.io" target="_blank">dudujerry的Coding世界!</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/linux/">linux</a><a class="post-meta__tags" href="/tags/arch/">arch</a></div><div class="post-share"><div class="social-share" data-image="/img/girl_avater.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/02/02/rust-monad/" title="rust-monad"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">rust-monad</div></div><div class="info-2"><div class="info-item-1">单子是自函子范畴中的幺半群.  自函子范畴: (C, $\circ$, $\mu$), 其中C为自函子集合, $\circ$为自然变换的复合, $\mu$为函子间的自然变换.  其中, 若$F\in C$满足结合律$\mu \circ F(\mu) = \mu \circ \mu_F$, 则称其为单子.  其中, $\mu_F$是自然变换$\mu$中$F$的分量, 定义如下:  ​    设C, D为两范畴, F, G为C到D的函子即$F, G: C\rarr D$.  ​    自然变换$\mu$是一族态射$\mu : F\Rarr G$, 对每个对象$X\in C$, 都有$\mu_X : F(X) \rarr G(X)$且满足自然性条件.  ​    $\mu$中关于对象F的分量即为$\mu_F$, 其中对象F在自函子范畴中为一自函子F.  TODO: 修正错误 练习： 用rust写出haskell的monad 1234567891011121314151617181920212223242526272829303132333435363738394041424344454...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/02/20/ssh-for-github/" title="如何为github制作ssh密钥"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-20</div><div class="info-item-2">如何为github制作ssh密钥</div></div><div class="info-2"><div class="info-item-1">首先生成ssh密钥对 1ssh-keygen -t rsa -b 4096 -C &quot;your_email@example.com&quot; 输入存储的文件名和位置, 设为githubkey; 复制公钥 1pbcopy &lt; githubkey.pub 在github中添加密钥对, 黏贴公钥, 可在~/.ssh/.config中配置github.com为自动使用该密钥: </div></div></div></a><a class="pagination-related" href="/2025/02/20/qt-configuration/" title="如何在Ubuntu24.04配置Qt5环境"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-20</div><div class="info-item-2">如何在Ubuntu24.04配置Qt5环境</div></div><div class="info-2"><div class="info-item-1">只需要一行命令 1apt-get install build-essential libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev gdb cmake libdtkwidget-dev qtbase5-dev qtcreator 注意qt5-default已经被qtbase5-dev取代 需要Qt-Linguist语言支持, 再安装 1apt-get install qttools5-dev qttools5-dev-tools </div></div></div></a><a class="pagination-related" href="/2025/02/19/ubuntu-2404-gui/" title="如何在Ubuntu24.04安装图形化界面及坑"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-19</div><div class="info-item-2">如何在Ubuntu24.04安装图形化界面及坑</div></div><div class="info-2"><div class="info-item-1">安装桌面环境基本上, 只需要 1sudo apt-get update 然后安装桌面包 1sudo apt-get install ubuntu-desktop 这里在安装火狐时会卡一段时间, Snap的锅, 需等10min 接着安装xrdp或vnc server 12sudo apt-get install xrdpsudo apt-get install tightvncserver 踩到的坑1装完后home文件夹会出现Documents, Video, Desktop等看着非常碍眼的文件夹.修改~/.config/user-dirs.dirs, 将这些文件夹修改到别的地方即可(我是都修改到~/xdg_folders). 2还是在home中会出现thin_drives, 这是xrdp用于挂载远程文件夹的地方.修改/etc/xrdp/sesman.ini, 把FuseMountName修改到别的地方(可以直接取消其他注释). </div></div></div></a><a class="pagination-related" href="/2025/02/18/ubuntu-2404-change-source/" title="如何在Ubuntu24.04更新软件源"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-18</div><div class="info-item-2">如何在Ubuntu24.04更新软件源</div></div><div class="info-2"><div class="info-item-1">与Ubuntu 22不同，从Ubuntu24.04开始软件源配置位置被更改为 /etc/apt/source.list -&gt; /etc/apt/source.list.d/ubuntu.sources 打开终端修改软件源配置文件，删除原有配置，更改为 12345Types: debURIs: https://mirrors.tuna.tsinghua.edu.cn/ubuntu/Suites: noble noble-updates noble-securityComponents: main restricted universe multiverseSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg 更新源 1sudo apt-get update 若此时仍无法更新（提示Ign），则更新DNS： 1sudo vim /etc/systemd/resolved.conf 找到并修改 12DNS=8.8.8.8 8.8.4.4FallbackDNS=1.1.1.1 1.0.0.1 接着重启网络服务 1sudo ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dudujerry</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dudujerry452"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/dudujerry452" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:dudujerry452@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">mathjax慢——公式渲染不出来请等一会</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AD%97%E4%BD%93%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">字体问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A6%E6%91%B8%E6%9D%BFtap"><span class="toc-number">2.</span> <span class="toc-text">触摸板tap</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#pwm%E8%B0%83%E5%85%89%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">pwm调光问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">代理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%87%E7%BA%B9%E8%A7%A3%E9%94%81"><span class="toc-number">5.</span> <span class="toc-text">指纹解锁</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#x11%E7%BC%A9%E6%94%BE"><span class="toc-number">6.</span> <span class="toc-text">x11缩放</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/11/arch-problems/" title="arch_problems">arch_problems</a><time datetime="2026-02-11T08:22:52.000Z" title="发表于 2026-02-11 16:22:52">2026-02-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/02/rust-monad/" title="rust-monad">rust-monad</a><time datetime="2026-02-02T12:29:47.000Z" title="发表于 2026-02-02 20:29:47">2026-02-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/09/02/algoanalyse-1/" title="algoanalyse-1">algoanalyse-1</a><time datetime="2025-09-02T12:40:00.000Z" title="发表于 2025-09-02 20:40:00">2025-09-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/09/01/nash-equilibrium/" title="Nash均衡略解">Nash均衡略解</a><time datetime="2025-09-01T11:08:02.000Z" title="发表于 2025-09-01 19:08:02">2025-09-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/30/pca/" title="PCA主成分分析">PCA主成分分析</a><time datetime="2025-08-30T11:11:17.000Z" title="发表于 2025-08-30 19:11:17">2025-08-30</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By dudujerry</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
