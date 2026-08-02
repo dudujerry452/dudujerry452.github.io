@@ -1,0 +1,308 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>GPIS详解 | dudujerry的Coding世界!</title><meta name="author" content="dudujerry"><meta name="copyright" content="dudujerry"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="定义高斯过程(gaussian process, GP)，是一个无限维度的高斯分布，定义为  GP(\mu, \kappa)其中, $\mu$ 是均值, $\kappa$是协方差核, 也叫协方差函数.  GP的特点是: 取任意有限个点 $X &#x3D; [x_1, x_2, …, x_n]^T $ 时, GP在这些点上的值构成随机向量$f_X$   f_X &#x3D; [y_1, y_2, ..., y_n]^T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GPIS详解">
+<meta property="og:url" content="https://dudujerry452.github.io/2026/08/01/gpis-1/index.html">
+<meta property="og:site_name" content="dudujerry的Coding世界!">
+<meta property="og:description" content="定义高斯过程(gaussian process, GP)，是一个无限维度的高斯分布，定义为  GP(\mu, \kappa)其中, $\mu$ 是均值, $\kappa$是协方差核, 也叫协方差函数.  GP的特点是: 取任意有限个点 $X &#x3D; [x_1, x_2, …, x_n]^T $ 时, GP在这些点上的值构成随机向量$f_X$   f_X &#x3D; [y_1, y_2, ..., y_n]^T">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dudujerry452.github.io/img/girl_avater.jpg">
+<meta property="article:published_time" content="2026-08-01T12:43:51.000Z">
+<meta property="article:modified_time" content="2026-08-02T15:46:21.745Z">
+<meta property="article:author" content="dudujerry">
+<meta property="article:tag" content="gpis">
+<meta property="article:tag" content="高斯过程">
+<meta property="article:tag" content="图形学">
+<meta property="article:tag" content="CG">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dudujerry452.github.io/img/girl_avater.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "GPIS详解",
+  "url": "https://dudujerry452.github.io/2026/08/01/gpis-1/",
+  "image": "https://dudujerry452.github.io/img/girl_avater.jpg",
+  "datePublished": "2026-08-01T12:43:51.000Z",
+  "dateModified": "2026-08-02T15:46:21.745Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dudujerry",
+      "url": "https://dudujerry452.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dudujerry452.github.io/2026/08/01/gpis-1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'GPIS详解',
+  isHighlightShrink: undefined,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">28</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">59</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dudujerry的Coding世界!</span></a><a class="nav-page-title" href="/"><span class="site-name">GPIS详解</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 目录</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%9D%82%E8%B0%88/"><i class="fa-fw fas fa-music"></i><span> 杂谈</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">GPIS详解</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-01T12:43:51.000Z" title="发表于 2026-08-01 20:43:51">2026-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-02T15:46:21.745Z" title="更新于 2026-08-02 23:46:21">2026-08-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>高斯过程(gaussian process, GP)，是一个无限维度的高斯分布，定义为</p>
+<script type="math/tex; mode=display">
+GP(\mu, \kappa)</script><p>其中, $\mu$ 是均值, $\kappa$是协方差核, 也叫协方差函数. </p>
+<p>GP的特点是: 取任意有限个点 $X = [x_1, x_2, …, x_n]^T $ 时, GP在这些点上的值构成随机向量$f_X$ </p>
+<script type="math/tex; mode=display">
+f_X = [y_1, y_2, ..., y_n]^T \sim \mathcal{N}(\mu_X, \kappa(X, X)) \\
+f_X = \mu_X + \psi_X , \quad \psi_X \sim \mathcal{N}(0, \kappa(X, X))</script><p>其中, 式中$f_X,  \psi_X$都是随机向量, 但也可视为某随机函数在一系列位置$X$上的值所构成的向量$f(X), \psi(X)$, 但当前, 我们只关心这$|X|$个值而不关心作为其随机函数的值时的函数定义本身. </p>
+<p>$\mu_X = [\mu(x_1), \mu(x_2), …, \mu(x_n)]^T $, 此处的$\mu(x_i)$为GP的均值函数, 是确定的, $x_i$表示位置; </p>
+<p> $\kappa(X, X)$又称协方差矩阵, 记作$K$, $K_{i,j} = \kappa(x_i, x_j)$; </p>
+<p>此时, $f_X$被称为高斯过程的一个先验分布. 反过来说, 若对任意的$X$都满足该性质, 那么就称这个$\mu, \kappa$的组合是一个高斯过程. </p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>如何证明多维高斯分布$f_X$总能写为均值+方差的形式$\mu_X + \psi(X)$? </p>
+<p>设$Y \sim \mathcal{N}(\mu, \Sigma)$, 令$\Psi = Y - \mu$. </p>
+<script type="math/tex; mode=display">
+\mathbb{E}(\Psi) = \mathbb{E}(Y - \mu) = \mu - \mu = 0 \\
+Cov(\Psi) = Cov(Y - \mu) = Cov(Y) = \Sigma</script><p>所以, </p>
+<script type="math/tex; mode=display">
+\Psi \sim \mathcal{N}(0, \Sigma)</script><p>Y可写为 $Y = \mu + \Psi$. </p>
+</blockquote>
+<h1 id="联合分布"><a href="#联合分布" class="headerlink" title="联合分布"></a>联合分布</h1><p>一系列点构成的随机向量$\psi(X)$和另一系列点构成的随机向量$\psi(p)$的联合分布可表示为</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix}
+f_X \\ 
+f_Y
+\end{bmatrix} \sim \mathcal{N}(
+\begin{bmatrix} 
+\mu_X \\
+\mu_Y
+\end{bmatrix}, 
+\begin{bmatrix}
+K(X, X) & K(X, Y) \\ 
+K(Y, X) & K(Y, Y)
+\end{bmatrix} 
+)</script><p>其中$K(X, Y)$是$N\times M$的矩阵, $K(X, Y)<em>{i,j} = \kappa(x_i, y_j)$以此类推. 下面用$\Sigma</em>{xx}$表示联合分布中的$K(X, X)$. </p>
+<h1 id="条件分布"><a href="#条件分布" class="headerlink" title="条件分布"></a>条件分布</h1><p>为简便起见, 下面$Y$表示随机向量$f_Y$, $X$表示$f_X$, $\mathbf{x}$表示确定向量, $\mu(Y)$表示$\mu(f(Y)) = \mu_Y$. 例如, $X = \mathbf{x}$表示$f_X = \mathbf{x}$. </p>
+<p>推导$Y$的条件分布 $p(Y | X = \mathbf{x})$: </p>
+<p>为取出Y中与X无关的部分, 令</p>
+<script type="math/tex; mode=display">
+Z = Y - AX</script><p>要让Z与Y无关, 就要</p>
+<script type="math/tex; mode=display">
+\begin{align}
+Cov(Z, X) &= 0 \\ 
+Cov(Y - AX, X) = Cov(Y, X) - ACov(X, X) &= 0 \\ 
+
+\end{align}</script><p>得</p>
+<script type="math/tex; mode=display">
+A = Cov(Y, X)\times Cov(X, X)^{-1} = \Sigma_{yx}\Sigma_{xx}^{-1}</script><p>接下来计算Z的均值和协方差</p>
+<script type="math/tex; mode=display">
+\mu(Z) = \mu(Y - AX) = \mu(Y) -A\mu(X) = \mu_Y - A\mu_X</script><script type="math/tex; mode=display">
+\begin{align}
+\Sigma_Z &= Cov(Z, Z) = Cov(Y - AX, Y - AX) \\
+&= Cov(Y - AX, Y) - Cov(Y-AX, X)A^T \\ 
+&= Cov(Y, Y) - ACov(X, Y) - Cov(Y, X)A^T + ACov(X, X)A^T \\ 
+&= \Sigma_{yy} - \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy} - \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy} + \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xx}\Sigma_{xx}^{-1}\Sigma_{xy} \\ 
+&= \Sigma_{yy} - \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy} - \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy} + \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}  \\
+&= \Sigma_{yy} - \Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}
+\end{align}</script><p>所以, $Z\sim \mathcal{N}(\mu(Z), \Sigma_Z)$. </p>
+<p>接下来推导$p(Y | X = \mathbf{x})$: </p>
+<script type="math/tex; mode=display">
+\begin{align}
+p(Y | X = \mathbf{x}) &= p(Z + AX | X = \mathbf{x}) \\ 
+&= p(Z + A\mathbf{x}) \\ 
+\end{align}</script><p>因为$A\mathbf{x}$为常量, 所以$Z+A\mathbf{x}$也是高斯分布, 且</p>
+<script type="math/tex; mode=display">
+\mu_{y|x} = \mu(Z+A\mathbf{x}) = \mu(Y) + A(\mathbf{x}-\mu(X))
+$$ {\mu(Z) + }</script><p>\begin{align}<br>\Sigma<em>{y|x}&amp;= Cov(Z + A\mathbf{x}, Z + A\mathbf{x})  \<br>&amp;= Cov(Z, Z+A\mathbf{x}) + Cov(A\mathbf{x}, Z + A\mathbf{x}) \<br>&amp;= Cov(Z, Z) + 0 + 0 + 0 \<br>&amp;= \Sigma</em>{yy} - \Sigma<em>{yx}\Sigma</em>{xx}^{-1}\Sigma_{xy}<br>\end{align}</p>
+<script type="math/tex; mode=display">
+
+所以</script><p>Y | X = \mathbf{x} \sim \mathcal{N}(\mu<em>{y|x}, \Sigma</em>{y|x})</p>
+<script type="math/tex; mode=display">
+
+# 计算
+
+## 直接采样
+
+计算多维高斯分布时(以条件分布为例), 对于用途不同有不一样的计算方法, 若只需要确定性表面, 则可以直接用$\mu_{y|x}$; 
+
+若需要根据方差采样$\mathcal{N}(\mu_{y|x}, \Sigma_{y|x})$, 因为计算机只能采样$\eta \sim \mathcal{N}(0, 1)$, 所以需要构造函数$f_\eta$, 使得$f_\eta(X) \sim \mathcal{N}(\mu_{y|x}, \Sigma_{y|x})$, 满足</script><p>Cov(f<em>\eta(X), f</em>\eta(X)) = \Sigma_{y|x}</p>
+<script type="math/tex; mode=display">
+所以, 做chomskey分解, 使得 $LL^T = \Sigma_{y|x}$, 可令 $f_\eta = \mu_{y|x} + L\eta$, 有</script><p>\begin{align}<br>Cov(\mu<em>{y|x} + L\eta, \mu</em>{y|x} + L\eta) &amp;= Cov(L\eta, L\eta) \<br>&amp;= LCov(\eta, \eta)L^T \<br>&amp;= LL^T \<br>&amp;= \Sigma_{y|x}<br>\end{align}</p>
+<script type="math/tex; mode=display">
+所以, $\psi_\eta = L\eta$,  $f_\eta = \mu_{y|x} + \psi_\eta$, . 
+
+此时, $f_\eta$和$\psi_\eta$在除$X$以外的位置上也有定义, 作为标量场可用于插值/重建表面. 
+
+## 稀疏卷积模拟
+
+无论是计算先验分布还是条件分布, 都要计算协方差chomskey分解, 复杂度非常高. 是否可以在给定GP的情况下, 快速计算其某一个实例对应的标量场$\psi(p)$? 答案是肯定的. 
+
+首先, 定义白噪声高斯过程</script><p>W \sim GP(0, \kappa_w)</p>
+<script type="math/tex; mode=display">
+其中对任意位置$p, q$有 $\kappa_w(p,q) = \sigma^2\delta(p-q)$, $\delta$为狄拉克函数:</script><p>\delta(x) = 0, x\neq 0 \<br>\int_{-\infty}^{\infty} \delta(x)dx = 1</p>
+<script type="math/tex; mode=display">
+也就是说空间中两个点互不相关, 独立分布, 其协方差函数$\kappa_w$只有位置相同时才有相关性. 因此高斯过程$W$存在标量场$W$(稍微滥用符号), 对任意位置$s$, 有$W(s) \sim \mathcal{N}(0, \sigma^2)$. 
+
+现在我们假设存在一个三维空间中的标量场$\psi_d$对应$GP(0, \kappa)$的某实例, 设核函数为$h$, 设</script><p>\psi<em>d(p) = \int</em>{\mathbb{R}^3}h(s, p)W(s)ds</p>
+<script type="math/tex; mode=display">
+则根据定义,</script><p>\begin{align}<br>\kappa(p, q) &amp;= Cov(\psi<em>d(p), \psi_d(q)) \<br>&amp;= \mathbb{E}(\psi_d(p)\psi_d(q)) \<br>&amp;= \mathbb{E}(\int</em>{\mathbb{R}^3}h(s, p)W(s)ds\int<em>{\mathbb{R}^3}h(u, q)W(u)du) \<br>&amp;= \mathbb{E}(\int</em>{\mathbb{R}^3}\int<em>{\mathbb{R}^3}h(s, p)h(u, q)W(s)W(u)dsdu) \<br>&amp;=  \int</em>{\mathbb{R}^3}\int<em>{\mathbb{R}^3}h(s, p)h(u, q)\mathbb{E}(W(s)W(u))dsdu \<br>&amp;= \int</em>{\mathbb{R}^3}\int<em>{\mathbb{R}^3}h(s, p)h(u, q)\sigma^2\delta(s-u)dsdu \<br>&amp;= \sigma^2 \int</em>{\mathbb{R}^3}\int<em>{\mathbb{R}^3}h(s, p)h(u, q)\delta(s-u)dsdu  \<br>&amp;= \sigma^2 \int</em>{\mathbb{R}^3}h(s, p)h(s, q)ds  \<br>\end{align}</p>
+<p>$$<br>这也就表明, 两个位置的相关性是以其为中心的核的重叠部分. </p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io">dudujerry</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dudujerry452.github.io/2026/08/01/gpis-1/">https://dudujerry452.github.io/2026/08/01/gpis-1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dudujerry452.github.io" target="_blank">dudujerry的Coding世界!</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/gpis/">gpis</a><a class="post-meta__tags" href="/tags/%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B/">高斯过程</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/">图形学</a><a class="post-meta__tags" href="/tags/CG/">CG</a></div><div class="post-share"><div class="social-share" data-image="/img/girl_avater.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/02/25/nixos-winapps/" title="如何在NixOS中安装winapps"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">如何在NixOS中安装winapps</div></div><div class="info-2"><div class="info-item-1">NixOS 上配置 WinApps：在 Linux 无缝运行 Windows 应用 本文记录在 NixOS 上使用 libvirt + KVM/QEMU 配置 WinApps 的完整过程，实现 Windows 应用与 Linux 桌面的无缝集成。  目录 什么是 WinApps 系统架构 NixOS 配置 创建 Windows 虚拟机 Windows 端配置 WinApps 安装与配置 使用方法 常见问题   什么是 WinAppsWinApps 是一个开源项目，允许在 Linux 上无缝运行 Windows 应用程序，就像它们是原生 Linux 应用一样。 核心特性：  Windows 应用显示为独立窗口（而非完整桌面） 在应用启动器中直接显示 Windows 应用图标 共享 Linux home 目录到 Windows 支持文件关联（右键用 Windows 应用打开文件） 支持所有 Windows 应用（除内核级反作弊系统）  后端支持：  Docker/Podman（推荐，自动化安装） libvirt/KVM（本文方案，更灵活，性能更好）   系统架构12345678910...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/girl_avater.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dudujerry</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">28</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">59</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dudujerry452"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/dudujerry452" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:dudujerry452@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">定义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%81%94%E5%90%88%E5%88%86%E5%B8%83"><span class="toc-number">2.</span> <span class="toc-text">联合分布</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E5%88%86%E5%B8%83"><span class="toc-number">3.</span> <span class="toc-text">条件分布</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By dudujerry</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
