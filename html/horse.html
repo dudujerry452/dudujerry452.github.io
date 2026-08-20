@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八国王</title>
+<style>
+  :root {
+    --border: #1f2937;
+    --ink: #1f2937;
+    --muted: #9ca3af;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px 48px;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    padding: 20px 24px 22px;
+    width: fit-content;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .controls label { font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  select, button {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    cursor: pointer;
+  }
+  button {
+    background: #111827;
+    color: #fff;
+    border-color: #111827;
+    font-weight: 600;
+  }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+
+  .board {
+    display: grid;
+    gap: 0;
+    margin: 0 auto;
+    width: fit-content;
+    position: relative;
+    touch-action: manipulation;
+  }
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+  }
+  .xmark {
+    color: rgba(31,41,55,.55);
+    font-weight: 800;
+    line-height: 1;
+    font-size: calc(var(--cell) * 0.5);
+    pointer-events: none;
+  }
+  .queen {
+    width: 66%;
+    height: 66%;
+    border-radius: 50%;
+    background: #fff;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--cell) * 0.42);
+    box-shadow: 0 1px 3px rgba(0,0,0,.35);
+    pointer-events: none;
+  }
+
+  .status { font-size: 12px; color: var(--muted); margin-top: 14px; min-height: 16px; }
+
+  /* ---- 动效 ---- */
+  @keyframes pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  @keyframes correct-flash {
+    0% { box-shadow: inset 0 0 0 999px rgba(34,197,94,0); }
+    35% { box-shadow: inset 0 0 0 999px rgba(34,197,94,.55); }
+    100% { box-shadow: inset 0 0 0 999px rgba(34,197,94,0); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+  }
+  @keyframes wrong-flash {
+    0% { box-shadow: inset 0 0 0 999px rgba(239,68,68,0); }
+    35% { box-shadow: inset 0 0 0 999px rgba(239,68,68,.6); }
+    100% { box-shadow: inset 0 0 0 999px rgba(239,68,68,0); }
+  }
+  .cell.correct { animation: pop .45s ease, correct-flash .45s ease; z-index: 5; }
+  .cell.wrong { animation: shake .35s ease, wrong-flash .35s ease; z-index: 5; }
+
+  /* ---- 胜利弹层 ---- */
+  .win-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(17,24,39,.35);
+    z-index: 500;
+    animation: fade-in .3s ease;
+  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .win-card {
+    background: #fff; border-radius: 16px;
+    padding: 30px 36px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: pop .45s ease;
+  }
+  .win-card h2 { margin: 0 0 6px; font-size: 26px; }
+  .win-card p { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
+  .win-card button { font-size: 15px; padding: 8px 20px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="controls">
+      <label>N=
+        <select id="nselect">
+          <option>4</option><option>5</option><option>6</option><option>7</option>
+          <option selected>8</option><option>9</option><option>10</option>
+        </select>
+      </label>
+      <button id="newBtn">新游戏</button>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="status" id="status"></div>
+  </div>
+
+<script>
+"use strict";
+
+/* ============================================================
+ *  核心算法（与 horse.c 一致）
+ * ============================================================ */
+
+let N = 8;
+
+const DX8 = [-1, 0, 1, 1, 1, 0, -1, -1];
+const DY8 = [-1, -1, -1, 0, 1, 1, 1, 0];
+const DX4 = [0, 1, 0, -1];
+const DY4 = [-1, 0, 1, 0];
+
+// xorshift32：低位质量好（普通 LCG 的低 2 位会周期退化，导致染色不随机）
+let _prng = 1;
+function srand(seed) { _prng = (seed >>> 0) || 1; }
+function rand() {
+  let x = _prng;
+  x ^= x << 13; x >>>= 0;
+  x ^= x >>> 17;
+  x ^= x << 5;  x >>>= 0;
+  _prng = x;
+  return x;
+}
+function randomSeed() { return (Math.random() * 0xffffffff) >>> 0; }
+
+function newmap() { return Array.from({ length: N }, () => new Array(N).fill(0)); }
+function cpymap(dest, src) { for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) dest[i][j] = src[i][j]; }
+function clrmap(m) { for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) m[i][j] = 0; }
+
+function checkpos(map, x, y) {
+  if (map[x][y] !== 0) return 0;
+  for (let i = 0; i < N; i++) if (map[x][i] !== 0) return 0;
+  for (let i = 0; i < N; i++) if (map[i][y] !== 0) return 0;
+  for (let i = 0; i < 8; i++) {
+    const nx = x + DX8[i], ny = y + DY8[i];
+    if (nx < 0 || nx >= N || ny < 0 || ny >= N) continue;
+    if (map[nx][ny] !== 0) return 0;
+  }
+  return 1;
+}
+
+let g_target, g_cnt, g_map;
+function count(map, x) {
+  if (x === N) {
+    if (g_cnt === g_target) cpymap(g_map, map);
+    g_cnt++;
+    return;
+  }
+  for (let i = 0; i < N; i++) {
+    if (checkpos(map, x, i)) {
+      map[x][i] = x + 1;
+      count(map, x + 1);
+      map[x][i] = 0;
+    }
+  }
+}
+function solve(target) {
+  if (!g_map) g_map = newmap(); else clrmap(g_map);
+  g_target = target; g_cnt = 0;
+  const m = newmap();
+  count(m, 0);
+  return g_cnt;
+}
+
+function scan(pmap, seed) {
+  let vis = N;
+  let map = newmap(); cpymap(map, pmap);
+  let nmap = newmap(); cpymap(nmap, map);
+  srand(seed);
+  while (vis < N * N) {
+    for (let i = 0; i < N; i++)
+      for (let j = 0; j < N; j++) {
+        if (map[i][j] !== 0) continue;
+        const d = rand() % 4;
+        const nx = i + DX4[d], ny = j + DY4[d];
+        if (nx < 0 || nx >= N || ny < 0 || ny >= N) continue;
+        nmap[i][j] = -Math.abs(map[nx][ny]);
+        if (nmap[i][j] !== 0) vis++;
+      }
+    let t = nmap; nmap = map; map = t;
+    cpymap(nmap, map);
+  }
+  return map;
+}
+
+let g_cnt2;
+function count2(cmap, bmap, x) {
+  if (g_cnt2 > 1) return;
+  if (x === N) { g_cnt2++; return; }
+  x++;
+  for (let i = 0; i < N; i++)
+    for (let j = 0; j < N; j++) {
+      if (cmap[i][j] !== x) continue;
+      if (checkpos(bmap, i, j)) {
+        bmap[i][j] = 1;
+        count2(cmap, bmap, x);
+        bmap[i][j] = 0;
+      }
+    }
+}
+function solve2(map) {
+  const bmap = newmap();
+  const cmap = newmap();
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) cmap[i][j] = Math.abs(map[i][j]);
+  g_cnt2 = 0;
+  count2(cmap, bmap, 0);
+  return g_cnt2;
+}
+
+// 随机位置 + 随机染色，重试直到唯一解；返回染色（王为正数，区域为负数）
+function generateOne() {
+  const MAX = solve(0);
+  if (MAX === 0) return null;
+  const max_search = 1000;
+  let posseed, colorseed, ans, coloring;
+  for (let outer = 0; outer < 10000; outer++) {
+    srand(randomSeed());
+    posseed = rand() % MAX;
+    colorseed = rand();
+    solve(posseed);
+    ans = MAX;
+    let attempts = 0;
+    while (ans > 1 && attempts < max_search) {
+      coloring = scan(g_map, colorseed);
+      ans = solve2(coloring);
+      colorseed = rand();
+      attempts++;
+    }
+    if (ans === 1) return coloring;
+  }
+  return null;
+}
+
+/* ============================================================
+ *  游戏 UI
+ * ============================================================ */
+
+const PALETTE = [
+  '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+  '#911eb4', '#42d4f4', '#f032e6', '#469990', '#9a6324',
+];
+
+const nSelect = document.getElementById('nselect');
+const newBtn = document.getElementById('newBtn');
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+
+let puzzle = null;   // 当前染色（2D，王格 > 0，区域格 < 0）
+let markGrid = null; // 2D：0=空 1=X 2=皇后
+let cellEls = null;  // 2D DOM 引用
+let foundQueens = 0;
+let won = false;
+
+let painting = false;
+let paintAction = null; // 'paint' | 'erase'
+
+function regionAt(coloring, i, j) {
+  if (i < 0 || i >= N || j < 0 || j >= N) return -1;
+  return Math.abs(coloring[i][j]);
+}
+
+function buildBoard(coloring) {
+  const avail = Math.min(window.innerWidth - 40, 560);
+  const cellPx = Math.max(24, Math.min(64, Math.floor(avail / N)));
+  boardEl.style.setProperty('--cell', cellPx + 'px');
+  boardEl.style.gridTemplateColumns = `repeat(${N}, ${cellPx}px)`;
+  boardEl.innerHTML = '';
+
+  markGrid = newmap();
+  cellEls = newmap();
+
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      const here = regionAt(coloring, i, j);
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.i = i;
+      cell.dataset.j = j;
+      cell.style.background = PALETTE[(here - 1) % PALETTE.length];
+      cell.style.width = cellPx + 'px';
+      cell.style.height = cellPx + 'px';
+
+      const rightEdge = (j === N - 1) || (regionAt(coloring, i, j + 1) !== here);
+      const bottomEdge = (i === N - 1) || (regionAt(coloring, i + 1, j) !== here);
+      cell.style.borderRight = `${rightEdge ? 3 : 1}px solid ${rightEdge ? 'var(--border)' : 'rgba(0,0,0,.10)'}`;
+      cell.style.borderBottom = `${bottomEdge ? 3 : 1}px solid ${bottomEdge ? 'var(--border)' : 'rgba(0,0,0,.10)'}`;
+      if (i === 0) cell.style.borderTop = '3px solid var(--border)';
+      if (j === 0) cell.style.borderLeft = '3px solid var(--border)';
+
+      boardEl.appendChild(cell);
+      cellEls[i][j] = cell;
+    }
+  }
+}
+
+function setX(i, j) {
+  if (markGrid[i][j] === 2) return;
+  if (markGrid[i][j] === 1) return;
+  markGrid[i][j] = 1;
+  const el = cellEls[i][j];
+  el.innerHTML = '<span class="xmark">✕</span>';
+}
+function eraseX(i, j) {
+  if (markGrid[i][j] !== 1) return;
+  markGrid[i][j] = 0;
+  const el = cellEls[i][j];
+  const x = el.querySelector('.xmark');
+  if (x) x.remove();
+}
+function setQueen(i, j) {
+  markGrid[i][j] = 2;
+  const el = cellEls[i][j];
+  el.innerHTML = '<span class="queen">♛</span>';
+}
+
+// 皇后落定后，自动把其整行、整列、8 邻域标记为 ✕（这些格不可能再有皇后）
+function autoMark(i, j) {
+  for (let c = 0; c < N; c++) setX(i, c);   // 行
+  for (let r = 0; r < N; r++) setX(r, j);   // 列
+  for (let d = 0; d < 8; d++) {             // 邻居
+    const r = i + DX8[d], c = j + DY8[d];
+    if (r < 0 || r >= N || c < 0 || c >= N) continue;
+    setX(r, c);
+  }
+}
+
+function cellFromEvent(e) {
+  const el = e.target.closest('.cell');
+  if (!el) return null;
+  return { i: +el.dataset.i, j: +el.dataset.j, el };
+}
+
+function cellFromPoint(x, y) {
+  const el = document.elementFromPoint(x, y);
+  if (!el) return null;
+  const cell = el.closest('.cell');
+  if (!cell) return null;
+  return { i: +cell.dataset.i, j: +cell.dataset.j, el: cell };
+}
+
+// ---- 左键：标记 / 擦除 X（可按住扫动）----
+boardEl.addEventListener('mousedown', (e) => {
+  if (e.button !== 0 || won || !puzzle) return;
+  e.preventDefault();
+  const c = cellFromEvent(e);
+  if (!c) return;
+  if (markGrid[c.i][c.j] === 2) return;          // 已确认的皇后不参与
+  if (markGrid[c.i][c.j] === 1) { paintAction = 'erase'; eraseX(c.i, c.j); }
+  else { paintAction = 'paint'; setX(c.i, c.j); }
+  painting = true;
+});
+
+boardEl.addEventListener('mousemove', (e) => {
+  if (!painting || won) return;
+  if (!(e.buttons & 1)) { painting = false; return; }
+  const c = cellFromEvent(e);
+  if (!c || markGrid[c.i][c.j] === 2) return;
+  if (paintAction === 'paint') setX(c.i, c.j);
+  else eraseX(c.i, c.j);
+});
+
+window.addEventListener('mouseup', () => { painting = false; });
+boardEl.addEventListener('mouseleave', () => { painting = false; });
+
+// ---- 猜皇后（桌面右键 / 手机双击共用）----
+function handleCellFind(i, j) {
+  if (won || !puzzle) return;
+  if (markGrid[i][j] === 2) return;              // 已确认
+  if (puzzle[i][j] > 0) {                        // 猜对了
+    setQueen(i, j);
+    autoMark(i, j);
+    foundQueens++;
+    vibrate('correct');
+    const el = cellEls[i][j];
+    el.classList.remove('wrong');
+    el.classList.add('correct');
+    setTimeout(() => el.classList.remove('correct'), 500);
+    if (foundQueens === N) win();
+  } else {                                       // 猜错了
+    vibrate('wrong');
+    const el = cellEls[i][j];
+    el.classList.remove('correct');
+    el.classList.add('wrong');
+    setTimeout(() => el.classList.remove('wrong'), 400);
+  }
+}
+
+// ---- 单击标记 ✕ / 再次单击擦除（手机用，桌面左键仍走 mousedown）----
+function handleCellTap(i, j) {
+  if (won || !puzzle) return;
+  if (markGrid[i][j] === 2) return;
+  if (markGrid[i][j] === 1) eraseX(i, j);
+  else setX(i, j);
+}
+
+// ---- 振动反馈（iOS Safari 不支持，静默忽略）----
+function vibrate(kind) {
+  if (!navigator.vibrate) return;
+  if (kind === 'correct') navigator.vibrate([30, 40, 30]);
+  else if (kind === 'wrong') navigator.vibrate(120);
+  else if (kind === 'win') navigator.vibrate([60, 40, 60, 40, 140]);
+}
+
+// ---- 桌面右键 ----
+boardEl.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const c = cellFromEvent(e);
+  if (c) handleCellFind(c.i, c.j);
+});
+
+// ---- 手机：单击标记，双击猜皇后，按住拖动连续涂/擦 ✕ ----
+let lastTapTime = 0, lastTapCell = null, tapTimer = null;
+let touchStartX = 0, touchStartY = 0;
+let touchDragging = false, touchPaintAction = null, touchStartCell = null;
+
+boardEl.addEventListener('touchstart', (e) => {
+  if (e.touches.length !== 1) return;
+  e.preventDefault();                            // 抑制合成鼠标事件与双击缩放
+  const c = cellFromEvent(e);
+  if (!c) return;
+  const t = e.touches[0];
+  touchStartX = t.clientX; touchStartY = t.clientY;
+  touchDragging = false;
+  touchStartCell = { i: c.i, j: c.j };
+  const key = c.i + ',' + c.j;
+  const now = Date.now();
+  if (lastTapCell === key && now - lastTapTime < 320) {
+    clearTimeout(tapTimer); tapTimer = null;
+    lastTapTime = 0; lastTapCell = null;
+    handleCellFind(c.i, c.j);
+  } else {
+    lastTapTime = now; lastTapCell = key;
+    tapTimer = setTimeout(() => { tapTimer = null; handleCellTap(c.i, c.j); }, 320);
+  }
+}, { passive: false });
+
+boardEl.addEventListener('touchmove', (e) => {
+  if (e.touches.length !== 1 || !touchStartCell) return;
+  const t = e.touches[0];
+  if (!touchDragging) {
+    const dx = t.clientX - touchStartX, dy = t.clientY - touchStartY;
+    if (dx * dx + dy * dy < 64) return;          // 移动不足 8px，先不算拖动
+    e.preventDefault();                          // 确认为拖动后阻止页面滚动
+    clearTimeout(tapTimer); tapTimer = null;     // 取消本次单击判定
+    lastTapTime = 0; lastTapCell = null;
+    touchDragging = true;
+    const { i, j } = touchStartCell;
+    if (markGrid[i][j] === 2) touchPaintAction = null;      // 起点是皇后：不绘制
+    else if (markGrid[i][j] === 1) { touchPaintAction = 'erase'; eraseX(i, j); }
+    else { touchPaintAction = 'paint'; setX(i, j); }
+  }
+  if (touchPaintAction) {
+    const c = cellFromPoint(t.clientX, t.clientY);
+    if (c) { touchPaintAction === 'paint' ? setX(c.i, c.j) : eraseX(c.i, c.j); }
+  }
+}, { passive: false });
+
+boardEl.addEventListener('touchend', () => {
+  touchDragging = false; touchPaintAction = null; touchStartCell = null;
+});
+boardEl.addEventListener('touchcancel', () => {
+  touchDragging = false; touchPaintAction = null; touchStartCell = null;
+});
+
+// ---- 胜利 ----
+function win() {
+  won = true;
+  vibrate('win');
+  const ms = parseInt(statusEl.dataset.ms || '0', 10);
+  showWinOverlay(ms);
+  confetti();
+}
+
+function showWinOverlay(ms) {
+  const ov = document.createElement('div');
+  ov.className = 'win-overlay';
+  ov.innerHTML = `
+    <div class="win-card">
+      <h2>🎉 恭喜完成！</h2>
+      <p>${N} 位皇后全部找到 · 生成耗时 ${ms} ms</p>
+      <button id="againBtn">再来一局</button>
+    </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('againBtn').addEventListener('click', () => {
+    ov.remove();
+    newGame();
+  });
+}
+
+function confetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:600;';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const colors = ['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#42d4f4','#f032e6'];
+  const pieces = [];
+  for (let k = 0; k < 180; k++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * canvas.height * 0.5,
+      w: 6 + Math.random() * 6,
+      h: 8 + Math.random() * 8,
+      color: colors[(Math.random() * colors.length) | 0],
+      vy: 2 + Math.random() * 3,
+      vx: -1.5 + Math.random() * 3,
+      rot: Math.random() * Math.PI * 2,
+      vr: -0.15 + Math.random() * 0.3,
+    });
+  }
+  const start = performance.now();
+  function frame(now) {
+    const t = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of pieces) {
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (t < 3000) requestAnimationFrame(frame);
+    else canvas.remove();
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---- 新游戏 ----
+function newGame() {
+  newBtn.disabled = true;
+  puzzle = null; // 生成期间禁止与旧棋盘交互
+  clearTimeout(tapTimer);
+  statusEl.textContent = '生成中…';
+  setTimeout(() => {
+    const t0 = performance.now();
+    let coloring = null;
+    try { coloring = generateOne(); } catch (e) { console.error(e); }
+    const ms = performance.now() - t0;
+    if (!coloring) {
+      statusEl.textContent = '生成失败，请重试';
+      newBtn.disabled = false;
+      return;
+    }
+    puzzle = coloring;
+    foundQueens = 0;
+    won = false;
+    painting = false;
+    statusEl.dataset.ms = Math.round(ms);
+    statusEl.textContent = `耗时 ${Math.round(ms)} ms`;
+    buildBoard(coloring);
+    newBtn.disabled = false;
+  }, 20);
+}
+
+function applyN() {
+  N = parseInt(nSelect.value, 10);
+  g_map = null;
+  newGame();
+}
+
+nSelect.addEventListener('change', applyN);
+newBtn.addEventListener('click', newGame);
+
+applyN();
+</script>
+</body>
+</html>
