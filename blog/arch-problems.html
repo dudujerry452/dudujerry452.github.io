@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>2026Arch之坑 | Dudujerrys's Coding World!</title>
+    <meta name="description" content="None">
+    <meta name="generator" content="VitePress v1.6.4">
+    <link rel="preload stylesheet" href="/assets/style.DAs6bJFv.css" as="style">
+    <link rel="preload stylesheet" href="/vp-icons.css" as="style">
+    
+    <script type="module" src="/assets/app.EIfE8_YA.js"></script>
+    <link rel="modulepreload" href="/assets/chunks/theme.79oha9eN.js">
+    <link rel="modulepreload" href="/assets/chunks/framework.CMtdJmbM.js">
+    <link rel="modulepreload" href="/assets/blog_arch-problems.md.ja70N2gI.lean.js">
+    <script id="check-dark-mode">(()=>{const e=localStorage.getItem("vitepress-theme-appearance")||"auto",a=window.matchMedia("(prefers-color-scheme: dark)").matches;(!e||e==="auto"?a:e==="dark")&&document.documentElement.classList.add("dark")})();</script>
+    <script id="check-mac-os">document.documentElement.classList.toggle("mac",/Mac|iPhone|iPod|iPad/i.test(navigator.platform));</script>
+  </head>
+  <body>
+    <div id="app"><article class="blog-post" data-v-ba47dfe7><a href="/" class="fix_top_right" data-v-ba47dfe7>Home</a><button class="fix_bottom_right" data-v-ba47dfe7 data-v-5baea464>光明模式</button><div class="post-body" data-v-ba47dfe7><div style="position:relative;" data-v-ba47dfe7><div><p>背景:</p><p>Thinkpad X1 Carbon gen13 Aura</p><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span>Linux dudujerry 6.18.7-arch1-1 #1 SMP PREEMPT_DYNAMIC Sat, 24 Jan 2026 00:47:39 +0000 x86_64 GNU/Linux</span></span></code></pre></div><p>大部分东西开箱即用, 遇坑如下:</p><h1 id="字体问题" tabindex="-1">字体问题 <a class="header-anchor" href="#字体问题" aria-label="Permalink to &quot;字体问题&quot;">​</a></h1><p>未安装字体时, emoji和中文都不会正常显示. 安装中文字体默认按照日文渲染，导致&quot;包, 称&quot;等字少一个竖. 需要配置字体conf.</p><h1 id="触摸板tap" tabindex="-1">触摸板tap <a class="header-anchor" href="#触摸板tap" aria-label="Permalink to &quot;触摸板tap&quot;">​</a></h1><p>编辑sway的config文件中的input时, 其管理的字段若有名称错误, 并不会提示错误, 坑了我很久. 比如<code>tap_drag</code>在<code>swaymsg -t get_inputs</code>中显示为<code>tap_drag</code>, 实际需要用<code>drag</code>来配置.</p><p>可以通过</p><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span>input type:touchpad {</span></span>
+<span class="line"><span>    tap enabled</span></span>
+<span class="line"><span>    drag enabled</span></span>
+<span class="line"><span>    drag_lock disabled</span></span>
+<span class="line"><span>}</span></span></code></pre></div><p>等来启动轻点和拖动, 并禁止拖动锁定. (拖动锁定的体验极差)</p><h1 id="pwm调光问题" tabindex="-1">pwm调光问题 <a class="header-anchor" href="#pwm调光问题" aria-label="Permalink to &quot;pwm调光问题&quot;">​</a></h1><p>某些笔记本自带的低亮度pwm调光非常伤眼（我的眼睛看一个小时就很酸疼了）， 必须第一时间设置. 用brightnessctl将最低亮度设置为60%, 然后用wl-gammarelay-rs降低gamma值模拟低亮度效果, 副作用是会导致黑色发灰.</p><p>sway配置:</p><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span>exec wl-gammarelay-rs</span></span>
+<span class="line"><span>exec_always brightnessctl set 60%</span></span>
+<span class="line"><span>bindsym --locked XF86MonBrightnessDown exec busctl --user -- call rs.wl-gammarelay / rs.wl.gammarelay UpdateBrightness d -0.05</span></span>
+<span class="line"><span>bindsym --locked XF86MonBrightnessUp exec busctl --user -- call rs.wl-gammarelay / rs.wl.gammarelay UpdateBrightness d +0.05</span></span></code></pre></div><h1 id="代理" tabindex="-1">代理 <a class="header-anchor" href="#代理" aria-label="Permalink to &quot;代理&quot;">​</a></h1><p>用dae代理, 大模型直接写出<code>/etc/dae/config.dae</code>配置.</p><h1 id="指纹解锁" tabindex="-1">指纹解锁 <a class="header-anchor" href="#指纹解锁" aria-label="Permalink to &quot;指纹解锁&quot;">​</a></h1><p>我希望开机进入tty界面时能自动启动一个指纹认证脚本, 用fprintd. 这里注意fprintd默认是不开放给普通用户使用的, 需要polkit设置权限.</p><p>设置后, 用<code>fprintd-enroll</code>录入本用户指纹.</p><p>编写指纹认证脚本</p><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span>#!/bin/bash</span></span>
+<span class="line"><span># ==============================================================================</span></span>
+<span class="line"><span>#                 Fingerprint Login Script for Linux TTY</span></span>
+<span class="line"><span># ==============================================================================</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># --- 配置 ---</span></span>
+<span class="line"><span># 请务必修改为你的实际用户名</span></span>
+<span class="line"><span>USER=&quot;dudujerry&quot;</span></span>
+<span class="line"><span># 设置最大重试次数</span></span>
+<span class="line"><span>MAX_RETRIES=3</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># --- 核心：确保必要的服务正在运行 ---</span></span>
+<span class="line"><span># fprintd 依赖 dbus</span></span>
+<span class="line"><span>systemctl is-active --quiet dbus || systemctl start dbus</span></span>
+<span class="line"><span>systemctl is-active --quiet fprintd || systemctl start fprintd</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># --- 准备工作 ---</span></span>
+<span class="line"><span>retry=0</span></span>
+<span class="line"><span># 将当前tty设备名保存下来，以便明确地与之交互</span></span>
+<span class="line"><span># tty命令会输出当前所在的终端设备，例如 /dev/tty1</span></span>
+<span class="line"><span>CURRENT_TTY=$(tty)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># 清理屏幕并显示欢迎信息</span></span>
+<span class="line"><span>clear</span></span>
+<span class="line"><span>echo &quot;=====================================&quot;</span></span>
+<span class="line"><span>echo &quot;  Arch Linux Fingerprint Login ($CURRENT_TTY)&quot;</span></span>
+<span class="line"><span>echo &quot;=====================================&quot;</span></span>
+<span class="line"><span>echo &quot;  User: $USER&quot;</span></span>
+<span class="line"><span>echo &quot;  Swipe your fingerprint to login...&quot;</span></span>
+<span class="line"><span>echo &quot;  Max retries: $MAX_RETRIES&quot;</span></span>
+<span class="line"><span>echo &quot;=====================================&quot;</span></span>
+<span class="line"><span>echo &quot;&quot;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># --- 验证循环 ---</span></span>
+<span class="line"><span>while [ $retry -lt $MAX_RETRIES ]; do</span></span>
+<span class="line"><span>    # 核心修正:</span></span>
+<span class="line"><span>    # 1. 使用 `sudo -u $USER` 代替 `su`。它在切换用户时能更好地处理权限和环境。</span></span>
+<span class="line"><span>    # 2. 正确传递D-Bus地址，并直接执行命令，无需复杂的shell嵌套。</span></span>
+<span class="line"><span>    # 3. 将 fprintd-verify 的标准输出和标准错误都重定向到当前TTY，确保用户能看到提示。</span></span>
+<span class="line"><span>    #    fprintd-verify 的提示信息是打印到标准错误的，所以需要 `2&gt; $CURRENT_TTY`。</span></span>
+<span class="line"><span>    # 4. `fprintd-verify` 命令本身不接受用户名参数。</span></span>
+<span class="line"><span>    sudo -u $USER DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket fprintd-verify &gt; $CURRENT_TTY 2&gt; $CURRENT_TTY</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    # 获取 fprintd-verify 的退出码</span></span>
+<span class="line"><span>    verify_result=$?</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    # --- 结果判断 ---</span></span>
+<span class="line"><span>    # 验证成功 (退出码 0)</span></span>
+<span class="line"><span>    if [ $verify_result -eq 0 ]; then</span></span>
+<span class="line"><span>        echo -e &quot;\n[SUCCESS] Fingerprint verified! Logging in as $USER...&quot;</span></span>
+<span class="line"><span>        sleep 1</span></span>
+<span class="line"><span>        # 使用 exec login -f $USER 来无密码登录用户，并替换当前脚本进程</span></span>
+<span class="line"><span>        exec login -f $USER</span></span>
+<span class="line"><span>    fi</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    # 验证失败</span></span>
+<span class="line"><span>    retry=$((retry + 1))</span></span>
+<span class="line"><span>    remaining=$((MAX_RETRIES - retry))</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    if [ $remaining -gt 0 ]; then</span></span>
+<span class="line"><span>        echo -e &quot;\n[FAILED] Fingerprint mismatch or error. Please try again. ($remaining retries left)&quot;</span></span>
+<span class="line"><span>        echo &quot;&quot;</span></span>
+<span class="line"><span>    fi</span></span>
+<span class="line"><span>done</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># --- 重试失败后回退 ---</span></span>
+<span class="line"><span>echo -e &quot;\n[ERROR] All fingerprint authentication attempts failed.&quot;</span></span>
+<span class="line"><span>echo &quot;Fallback to password-based login...&quot;</span></span>
+<span class="line"><span>sleep 2</span></span>
+<span class="line"><span># 执行常规的 login 程序，让用户输入密码</span></span>
+<span class="line"><span>exec login</span></span></code></pre></div><p>完成后覆盖tty1行为, 输入<code>systemctl edit getty@tty1.service</code>, 修改为:</p><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span>[Service]</span></span>
+<span class="line"><span>ExecStart=</span></span>
+<span class="line"><span># 解释：</span></span>
+<span class="line"><span># --skip-login (-n): 不提示输入用户名，直接运行后面的程序</span></span>
+<span class="line"><span># --noclear: 不清屏</span></span>
+<span class="line"><span># --login-program: 指定我们的指纹脚本，而不是默认的 /bin/login</span></span>
+<span class="line"><span># $TERM: 传递终端类型</span></span>
+<span class="line"><span>ExecStart=-/sbin/agetty --skip-login --noclear --login-program /usr/local/bin/fingerprint-login %I $TERM</span></span></code></pre></div><h1 id="x11缩放" tabindex="-1">x11缩放 <a class="header-anchor" href="#x11缩放" aria-label="Permalink to &quot;x11缩放&quot;">​</a></h1><p>直接使用wayland自带的xwayland时, xwayland会接到默认dpi=92的画布参数, 渲染出来大小不够, 使得wayland显示时进行nearst手动放大, 导致模糊. 需要禁用xwayland并安装xwayland-satellite, sway配置如下:</p><div class="language- vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang"></span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span>xwayland disabled</span></span>
+<span class="line"><span>exec xwayland-satellite # x11 应用启动后需要设置DISPLAY=:0</span></span>
+<span class="line"><span>exec_always &quot;sleep 2 &amp;&amp; DISPLAY=:0 xrdb -merge ~/.Xresources&quot; # 加载X资源设置DPI</span></span></code></pre></div><p>注: <code>~/.Xresources</code>为&quot;Xft.dpi: 192&quot;</p><p>注意这样设置后, 所有x11程序在启动时必须获得DISPLAY=:0以连接到xwayland-satellite的x11服务器.<br> 并且, 输入法在启动时也要设置DISPLAY=:0以让程序有机会注册输入法. 为了同步输入法dpi, 还需要设置xdpi, 方式如上.</p><p>关于输入法的更详细信息, 详见另一篇博文.</p><p>另外, 对于那些同时支持x11和wayland的程序, 比如linuxqq, 有时需要启动参数强制以wayland启动.</p><p>写完后深感无力, 格式化转nixos.</p><hr><p>2026.2.11</p><p>已转niri, niri自带xwayland-satellite, 支持x11程序动态缩放。 非必要不建议使用sway, 除非依赖老的i3配置。</p></div></div></div><div data-v-ba47dfe7></div></article></div>
+    <script>window.__VP_HASH_MAP__=JSON.parse("{\"api-examples.md\":\"DA4f6eI7\",\"blog_algoanalyse-1.md\":\"C2mmBDXb\",\"blog_anime-sigma.md\":\"BbZX1PoA\",\"blog_arch-problems.md\":\"ja70N2gI\",\"blog_cmake-external-project.md\":\"C5DzltBS\",\"blog_createblog.md\":\"emk_bJcV\",\"blog_db-sql.md\":\"DUmWz4ft\",\"blog_db-summary.md\":\"B6UjViNy\",\"blog_discrete-math.md\":\"CRVQHAQL\",\"blog_eight-queens-game.md\":\"BgCMlRh8\",\"blog_firstblog.md\":\"IDBLK7OV\",\"blog_genetic-algo.md\":\"tvb1E0gL\",\"blog_gpis-1.md\":\"CYM1fodD\",\"blog_linux_useful_command.md\":\"CEKo5rft\",\"blog_markov-chain.md\":\"Br-uvwGS\",\"blog_multi-repo.md\":\"BWSbemX0\",\"blog_nash-equilibrium.md\":\"Ckd6Swvx\",\"blog_nixos-install.md\":\"B94qS0j3\",\"blog_nixos-winapps.md\":\"6RQ_BwuI\",\"blog_optimize-mpv.md\":\"DOGfpXUK\",\"blog_pca.md\":\"CMwToFCD\",\"blog_qt-configuration.md\":\"OO1A0gai\",\"blog_quickfps.md\":\"Wv_H_P4m\",\"blog_rust-monad.md\":\"C52uoRM_\",\"blog_ssh-for-github.md\":\"CNPv7CHc\",\"blog_sshonwin.md\":\"DodY8Ct5\",\"blog_theauto.md\":\"DfOaKdK9\",\"blog_ubuntu-2404-change-source.md\":\"C5fKCgIQ\",\"blog_ubuntu-2404-gui.md\":\"Ct_lrvxx\",\"blog_vim-config.md\":\"1bCPxAdy\",\"blog_webgl1.md\":\"ow9MKeBl\",\"index.md\":\"CyooiY0P\",\"markdown-examples.md\":\"BBQW7Irq\",\"source_about_index.md\":\"CrScej2y\"}");window.__VP_SITE_DATA__=JSON.parse("{\"lang\":\"en-US\",\"dir\":\"ltr\",\"title\":\"Dudujerrys's Coding World!\",\"description\":\"None\",\"base\":\"/\",\"head\":[],\"router\":{\"prefetchLinks\":true},\"appearance\":true,\"themeConfig\":{\"author\":\"dudujerry\",\"github_user\":\"dudujerry452\",\"home_page_size\":16,\"shader\":{\"frag\":\"\\n// Heartfelt - by Martijn Steinrucken aka BigWings - 2017\\n// Email:countfrolic@gmail.com Twitter:@The_ArtOfCode\\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\\n\\n// I revisited the rain effect I did for another shader. This one is better in multiple ways:\\n// 1. The glass gets foggy.\\n// 2. Drops cut trails in the fog on the glass.\\n// 3. The amount of rain is adjustable (with Mouse.y)\\n\\n// To have full control over the rain, uncomment the HAS_HEART define \\n\\n// A video of the effect can be found here:\\n// https://www.youtube.com/watch?v=uiF5Tlw22PI&feature=youtu.be\\n\\n// Music - Alone In The Dark - Vadim Kiselev\\n// https://soundcloud.com/ahmed-gado-1/sad-piano-alone-in-the-dark\\n// Rain sounds:\\n// https://soundcloud.com/elirtmusic/sleeping-sound-rain-and-thunder-1-hours\\n\\n#define S(a, b, t) smoothstep(a, b, t)\\n//#define CHEAP_NORMALS\\n#define HAS_HEART\\n#define USE_POST_PROCESSING\\n\\nvec3 N13(float p) {\\n    //  from DAVE HOSKINS\\n   vec3 p3 = fract(vec3(p) * vec3(.1031,.11369,.13787));\\n   p3 += dot(p3, p3.yzx + 19.19);\\n   return fract(vec3((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y, (p3.y+p3.z)*p3.x));\\n}\\n\\nvec4 N14(float t) {\\n\\treturn fract(sin(t*vec4(123., 1024., 1456., 264.))*vec4(6547., 345., 8799., 1564.));\\n}\\nfloat N(float t) {\\n    return fract(sin(t*12345.564)*7658.76);\\n}\\n\\nfloat Saw(float b, float t) {\\n\\treturn S(0., b, t)*S(1., b, t);\\n}\\n\\n\\nvec2 DropLayer2(vec2 uv, float t) {\\n    vec2 UV = uv;\\n    \\n    uv.y += t*0.75;\\n    vec2 a = vec2(6., 1.);\\n    vec2 grid = a*2.;\\n    vec2 id = floor(uv*grid);\\n    \\n    float colShift = N(id.x); \\n    uv.y += colShift;\\n    \\n    id = floor(uv*grid);\\n    vec3 n = N13(id.x*35.2+id.y*2376.1);\\n    vec2 st = fract(uv*grid)-vec2(.5, 0);\\n    \\n    float x = n.x-.5;\\n    \\n    float y = UV.y*20.;\\n    float wiggle = sin(y+sin(y));\\n    x += wiggle*(.5-abs(x))*(n.z-.5);\\n    x *= .7;\\n    float ti = fract(t+n.z);\\n    y = (Saw(.85, ti)-.5)*.9+.5;\\n    vec2 p = vec2(x, y);\\n    \\n    float d = length((st-p)*a.yx);\\n    \\n    float mainDrop = S(.4, .0, d);\\n    \\n    float r = sqrt(S(1., y, st.y));\\n    float cd = abs(st.x-x);\\n    float trail = S(.23*r, .15*r*r, cd);\\n    float trailFront = S(-.02, .02, st.y-y);\\n    trail *= trailFront*r*r;\\n    \\n    y = UV.y;\\n    float trail2 = S(.2*r, .0, cd);\\n    float droplets = max(0., (sin(y*(1.-y)*120.)-st.y))*trail2*trailFront*n.z;\\n    y = fract(y*10.)+(st.y-.5);\\n    float dd = length(st-vec2(x, y));\\n    droplets = S(.3, 0., dd);\\n    float m = mainDrop+droplets*r*trailFront;\\n    \\n    //m += st.x>a.y*.45 || st.y>a.x*.165 ? 1.2 : 0.;\\n    return vec2(m, trail);\\n}\\n\\nfloat StaticDrops(vec2 uv, float t) {\\n\\tuv *= 40.;\\n    \\n    vec2 id = floor(uv);\\n    uv = fract(uv)-.5;\\n    vec3 n = N13(id.x*107.45+id.y*3543.654);\\n    vec2 p = (n.xy-.5)*.7;\\n    float d = length(uv-p);\\n    \\n    float fade = Saw(.025, fract(t+n.z));\\n    float c = S(.3, 0., d)*fract(n.z*10.)*fade;\\n    return c;\\n}\\n\\nvec2 Drops(vec2 uv, float t, float l0, float l1, float l2) {\\n    float s = StaticDrops(uv, t)*l0; \\n    vec2 m1 = DropLayer2(uv, t)*l1;\\n    vec2 m2 = DropLayer2(uv*1.85, t)*l2;\\n    \\n    float c = s+m1.x+m2.x;\\n    c = S(.3, 1., c);\\n    \\n    return vec2(c, max(m1.y*l0, m2.y*l1));\\n}\\n\\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\\n{\\n\\tvec2 uv = (fragCoord.xy-.5*iResolution.xy) / iResolution.y;\\n    vec2 UV = fragCoord.xy/iResolution.xy;\\n    vec3 M = iMouse.xyz/iResolution.xyz;\\n    float T = iTime+M.x*2.;\\n    \\n    #ifdef HAS_HEART\\n    T = mod(iTime, 102.);\\n    T = mix(T, M.x*102., M.z>0.?1.:0.);\\n    #endif\\n    \\n    \\n    float t = T*.2;\\n    \\n    float rainAmount = iMouse.z>0. ? M.y : sin(T*.05)*.3+.7;\\n    \\n    float maxBlur = mix(3., 6., rainAmount);\\n    float minBlur = 2.;\\n    \\n    float story = 0.;\\n    float heart = 0.;\\n    \\n    #ifdef HAS_HEART\\n    story = S(0., 70., T);\\n    \\n    t = min(1., T/70.);\\t\\t\\t\\t\\t\\t// remap drop time so it goes slower when it freezes\\n    t = 1.-t;\\n    t = (1.-t*t)*70.;\\n    \\n    float zoom= mix(.3, 1.2, story);\\t\\t// slowly zoom out\\n    uv *=zoom;\\n    minBlur = 4.+S(.5, 1., story)*3.;\\t\\t// more opaque glass towards the end\\n    maxBlur = 6.+S(.5, 1., story)*1.5;\\n    \\n    vec2 hv = uv-vec2(.0, -.1);\\t\\t\\t\\t// build heart\\n    hv.x *= .5;\\n    float s = S(110., 70., T);\\t\\t\\t\\t// heart gets smaller and fades towards the end\\n    hv.y-=sqrt(abs(hv.x))*.5*s;\\n    heart = length(hv);\\n    heart = S(.4*s, .2*s, heart)*s;\\n    rainAmount = heart;\\t\\t\\t\\t\\t\\t// the rain is where the heart is\\n    \\n    maxBlur-=heart;\\t\\t\\t\\t\\t\\t\\t// inside the heart slighly less foggy\\n    uv *= 1.5;\\t\\t\\t\\t\\t\\t\\t\\t// zoom out a bit more\\n    t *= .25;\\n    #else\\n    float zoom = -cos(T*.2);\\n    uv *= .7+zoom*.3;\\n    #endif\\n    UV = (UV-.5)*(.9+zoom*.1)+.5;\\n    \\n    float staticDrops = S(-.5, 1., rainAmount)*2.;\\n    float layer1 = S(.25, .75, rainAmount);\\n    float layer2 = S(.0, .5, rainAmount);\\n    \\n    \\n    vec2 c = Drops(uv, t, staticDrops, layer1, layer2);\\n   #ifdef CHEAP_NORMALS\\n    \\tvec2 n = vec2(dFdx(c.x), dFdy(c.x));// cheap normals (3x cheaper, but 2 times shittier ;))\\n    #else\\n    \\tvec2 e = vec2(.001, 0.);\\n    \\tfloat cx = Drops(uv+e, t, staticDrops, layer1, layer2).x;\\n    \\tfloat cy = Drops(uv+e.yx, t, staticDrops, layer1, layer2).x;\\n    \\tvec2 n = vec2(cx-c.x, cy-c.x);\\t\\t// expensive normals\\n    #endif\\n    \\n    \\n    #ifdef HAS_HEART\\n    n *= 1.-S(60., 85., T);\\n    c.y *= 1.-S(80., 100., T)*.8;\\n    #endif\\n    \\n    float focus = mix(maxBlur-c.y, minBlur, S(.1, .2, c.x));\\n    vec3 col = textureLod(iChannel0, UV+n, focus).rgb;\\n    \\n    \\n    #ifdef USE_POST_PROCESSING\\n    t = (T+3.)*.5;\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t// make time sync with first lightnoing\\n    float colFade = sin(t*.2)*.5+.5+story;\\n    col *= mix(vec3(1.), vec3(.8, .9, 1.3), colFade);\\t// subtle color shift\\n    float fade = S(0., 10., T);\\t\\t\\t\\t\\t\\t\\t// fade in at the start\\n    float lightning = sin(t*sin(t*10.));\\t\\t\\t\\t// lighting flicker\\n    lightning *= pow(max(0., sin(t+sin(t))), 10.);\\t\\t// lightning flash\\n    col *= 1.+lightning*fade*mix(1., .1, story*story);\\t// composite lightning\\n    col *= 1.-dot(UV-=.5, UV);\\t\\t\\t\\t\\t\\t\\t// vignette\\n    \\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\n    #ifdef HAS_HEART\\n    \\tcol = mix(pow(col, vec3(1.2)), col, heart);\\n    \\tfade *= S(102., 97., T);\\n    #endif\\n    \\n    col *= fade;\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t// composite start and end fade\\n    #endif\\n    \\n    //col = vec3(heart);\\n    fragColor = vec4(col, 1.);\\n}\\n\\n\",\"uniforms\":{\"speed\":0.8},\"textures\":[\"/image.png\"],\"fps\":60}},\"locales\":{},\"scrollOffset\":134,\"cleanUrls\":false}");</script>
+    
+  </body>
+</html>
